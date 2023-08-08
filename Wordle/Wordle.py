@@ -1,0 +1,1 @@
+"""Wordle game imitation and solver algorithm main program by Evan Scott"""
