@@ -69,7 +69,7 @@ for key, value  in dictLWFreq.items():
         value[i] = (round((int(value[i]) / totalLettersdictLWFreq[key]), 6))
         i+= 1
     i = 0
-
-#print final dictionaries
-print("\nDictionary for probability of letter frequency is:\n",dictLetterFreq)
-print("\nDictionary for probability of letter in a specific location is:\n" , dictLWFreq)
+if __name__ == '__main__':
+    #print final dictionaries
+    print("\nDictionary for probability of letter frequency is:\n",dictLetterFreq)
+    print("\nDictionary for probability of letter in a specific location is:\n" , dictLWFreq)
