@@ -1,4 +1,3 @@
-""" BY EVAN SCOTT"""
 #This program scales the 2 data set: LetterFrequency.txt and Long_wordlist.txt down to a 0 to
 # 1 range >>> explanation below 
 
@@ -19,7 +18,7 @@
 #import statements
 import csv
 
-#open files
+#open files to be read
 f = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt", "r")
 d = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/LetterFrequency.txt", "r")
 csv_reader = csv.reader(d, delimiter = ',')
@@ -69,6 +68,8 @@ for key, value  in dictLWFreq.items():
         value[i] = (round((int(value[i]) / totalLettersdictLWFreq[key]), 6))
         i+= 1
     i = 0
+
+#so print doesn't execute when running program for creating graphs
 if __name__ == '__main__':
     #print final dictionaries
     print("\nDictionary for probability of letter frequency is:\n",dictLetterFreq)
