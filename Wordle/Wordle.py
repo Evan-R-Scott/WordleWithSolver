@@ -3,6 +3,8 @@ File: iteration2Helper.py
 Author: COMP 120 instructor
 Description: Code that illustrates putting widgets in frames.
 """
+import DataProbabilityCalculation
+
 import random
 import tkinter as tk
 
@@ -24,9 +26,8 @@ class Wordy:
         self.SolverInfo()
         self.messageScreen()        #Presents messages to the user
         self.parameterScreen()      #The Parameter Screen
-        self.buttonFrame()          #Houses start and quit button
-        
-        
+        self.buttonFrame()           #Houses start and quit button
+        self.renormalization()      
         
         #Change size of screen and spacing
     def variablesDontEdit(self):
@@ -46,6 +47,15 @@ class Wordy:
         self.NUM_GUESSES = 6 # number of guesses that the user gets 
         self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt"
         self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/short_wordlist.txt"
+
+        #Initialize the list containing 5 dictionaries for each specific spot with letters and probabilities
+        #that get removed and renormalised bsaed on guess making letters green/gray/yellow
+        self.DL04 =  []
+        for _ in range(5):
+            self.DL04.append(DataProbabilityCalculation.dictLetterFreq)
+        print(self.DL04)
+
+        self.dictLWFreq = DataProbabilityCalculation.dictLWFreq
 
         # Size of the frame that holds all guesses.  This is the upper left
         # frame in the window.
@@ -80,6 +90,11 @@ class Wordy:
 
         #initialize entropy value to 0
         self.curEntropyVal = 0
+
+        #Trackers for Green/Yellow/Gray Letters
+        self.correctLetters = [0,0,0,0,0]
+        self.yellowLetters = []
+        self.grayLetters = []
 
         #solver variables
         self.FontHeader = 8
@@ -294,6 +309,11 @@ class Wordy:
             else: #Word is not long enough
                 self.messageString.set('Word is not long enough')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
+    
+    #renormalize the probabilities of letters in 5 dictionaries because letters got removed
+    #from previous guess
+    def renormalization(self):
+        print("hi")
                   
     def displayEntered(self):
         """
@@ -308,6 +328,14 @@ class Wordy:
             lst1.append(i+1)
             if(self.curGuess[i] == self.answer[i]): #turns the color green
                 lst2.append(i+1)
+                #keeps track of where correct letters are located when found so we can test other uncertain letters
+                #in that already determined location's answer
+                self.correctLetters[i] = self.curGuess[i]
+                #sets value/probability to 1 and removes all other letters from that list because found correct letter in
+                #correct spot
+                #self.DL04[i][self.curGuess[i]]
+                self.DL04[i] = {self.curGuess[i]: 1.0}
+
                 frames  = tk.Frame(self.game_frame,
                             borderwidth = 1, relief = 'solid',
                             width = self.GUESS_FRAME_SIZE,
@@ -338,6 +366,10 @@ class Wordy:
                 for t in range(len(self.curGuess)):
                     if num > 0:
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] == i:
+                            #del below removes that letter at key i from directionory t in list because
+                            #it appeared yellow
+                            del self.DL04[t][str(i)]
+
                             frames  = tk.Frame(self.game_frame,
                                         borderwidth = 1, relief = 'solid',
                                         width = self.GUESS_FRAME_SIZE,
@@ -353,6 +385,11 @@ class Wordy:
         
         for i in lst1: #if it has not changed colors then it will go grey
             if i not in lst2:
+                for j in range(5):
+                    print(str(self.curGuess[i-1]))
+                    del self.DL04[j][str(self.curGuess[i-1])]
+                    #del self.DL04[j][str(self.curGuess[j])]
+                print(self.DL04)
                 frames  = tk.Frame(self.game_frame,
                                             borderwidth = 1, relief = 'solid',
                                             width = self.GUESS_FRAME_SIZE,
@@ -363,6 +400,8 @@ class Wordy:
                                 aspect= self.FONT_SIZE_GUESS, fg= 'white', bg= self.GUESS_FRAME_BG_WRONG)
                 let.grid(row= self.curRow, column= i)
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
+        
+        self.renormalization()
 
     def SolverInfo(self):
         self.totalWordsLeft = tk.StringVar()
@@ -373,10 +412,7 @@ class Wordy:
                                      width = self.SolverFrameWidth)
         self.curInfoFrame.grid(row = 1, column = 1)
         self.curInfoFrame.grid_propagate(False)
-
-
-
-                      
+       
     def messageScreen(self):
         # Message Frame
         self.messageString = tk.StringVar()

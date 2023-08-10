@@ -18,6 +18,10 @@
 #import statements
 import csv
 
+class DataProbCalc:
+    def __init__(self):
+        pass
+
 #open files to be read
 f = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt", "r")
 d = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/LetterFrequency.txt", "r")
