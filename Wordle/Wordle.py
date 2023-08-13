@@ -1,8 +1,16 @@
 """
-File: iteration2Helper.py
-Author: COMP 120 instructor
-Description: Code that illustrates putting widgets in frames.
+Made By Evan Scott
+Description: Wordle imitation program that is fully functional
+and incorporates an optional solving algorithm which learns/adapts as guesses are entered
+to recommend the most optimal/value-driven guesses based on a number of factors.
+- Information Theory
+- Entropy (the minization of uncertainty in as short of steps as possible)
+- Tested data sets - (such as) frequency of letters in the english language and 
+location of these said letters in a 5 letter word
+- Renormalization of previously mentioned data
+
 """
+#import statements
 import DataProbabilityCalculation
 
 import random
@@ -13,22 +21,23 @@ import time
 
 from enum import Enum
 class Wordy:
+    #constructor
     def __init__(self):
         
-        self.variablesDontEdit()        #variables that do not affect game play
-        self.variablesEdit()            #The universal Variables
+        #function calls to initialize the game window
+        self.variablesDontEdit()    #variables that do not affect game play
+        self.variablesEdit()        #The universal variables
         self.makeWrdLst()           #Makes all the words into a list
         self.setScreen()            #Builds the Screen
         self.gameScreen()           #Builds the game screen
-        self.guessFrames()
+        self.guessFrames()          #Builds the frame for guesses
         self.keyScreen()            #Builds the keyboard frame
-        self.keybuttons()
-        self.SolverInfo()
+        self.keybuttons()           #builds the keys/functionality
+        self.SolverInfo()           #Builds the solver frame
         self.messageScreen()        #Presents messages to the user
         self.parameterScreen()      #The Parameter Screen
         self.buttonFrame()           #Houses start and quit button    
         
-        #Change size of screen and spacing
     def variablesDontEdit(self):
         """Variables used thorughout the program that don't affect the visuals"""
         self.gamestarted = False
@@ -44,6 +53,8 @@ class Wordy:
         # Constants
         self.WORD_SIZE = 5  # number of letters in the hidden word
         self.NUM_GUESSES = 6 # number of guesses that the user gets 
+
+        #Files to be opened and read
         self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt"
         self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/short_wordlist.txt"
 
@@ -73,9 +84,7 @@ class Wordy:
         self.GUESS_FRAME_BG_BEGIN = 'white' # background color of a guess box 
                                             # after the user enters the letter,
                                             # but before the guess is entered.
-        self.GUESS_FRAME_TEXT_BEGIN = 'black' # color of text in guess box after the
-                                            # user enters the letter, but before
-                                            # the guess is entered.
+        self.GUESS_FRAME_TEXT_BEGIN = 'black' # color of text in guess box 
         self.GUESS_FRAME_BG_WRONG = 'grey'  # background color of guess box
                                             # after the guess is entered, and the
                                             # letter is not in the hidden word.
@@ -92,8 +101,7 @@ class Wordy:
         self.FONT_FAMILY = 'ariel'          # Font to use for letters in the guess boxes.
         self.FONT_SIZE_GUESS = 35           # Font size for letters in the guess boxes.
 
-        #initialize entropy value to 0
-        self.curEntropyVal = 0
+        self.curEntropyVal = 0 #initialize entropy value to 0
 
         #Trackers for Green/Yellow/Gray Letters
         self.correctLetters = [0,0,0,0,0]
@@ -102,7 +110,7 @@ class Wordy:
         self.grayRenormalizationProb = [0,0,0,0,0]
         self.tempLocYellow = [[],[],[],[],[]]
 
-        #solver variables
+        #Solver variables
         self.FontHeader = 8
         self.FontRecommendations = 4
         self.Header = (self.FONT_FAMILY, self.FontHeader)
@@ -120,18 +128,10 @@ class Wordy:
         # Parameters for the keyboard frame
         self.KEYBOARD_FRAME_HEIGHT = 200
         self.KEYBOARD_BUTTON_HEIGHT = 2
-        self.KEYBOARD_BUTTON_WIDTH = 3  # width of the letter buttons.  Remember,
-                                        # width of buttons is measured in characters.
+        self.KEYBOARD_BUTTON_WIDTH = 3  # width of the letter buttons.
         self.KEYBOARD_BUTTON_WIDTH_LONG = 5 # width of the enter and back buttons.
 
-        # The following colors for the keyboard buttons
-        # follow the same specifications as the colors defined above for the guess
-        # boxes.  The problem is that at least on macs, in Tkinter you cannot change
-        # the background color of a button.  So you will leave the background color as the
-        # default (white),and just change the color of the text in the button, 
-        # instead of the background color.
-        # So the text color starts as the default (black), and then changes to grey, orange, 
-        # green depending on the result of the guess for that letter.
+
         self.KEYBOARD_BUTTON_TEXT_BEGIN = 'black' 
         self.KEYBOARD_BUTTON_TEXT_WRONG = 'grey'  
         self.KEYBOARD_BUTTON_TEXT_CORRECT_WRONG_LOC = 'orange' 
@@ -145,21 +145,17 @@ class Wordy:
         # Parameters for the control frame
         self.CONTROL_FRAME_HEIGHT = self.PARENT_GUESS_FRAME_HEIGHT + self.KEYBOARD_FRAME_HEIGHT
         self.CONTROL_FRAME_WIDTH = 300
-        self.USER_SELECTION_PADDING = 10  # Horizontal padding on either side of the widgets in
-                                            # the parameter frame.
+        self.USER_SELECTION_PADDING = 10  
 
-        self.MESSAGE_DISPLAY_TIME_SECS = 5 # Length of time the message should be
-                                            # displayed.
-
-                                        # When processing a guess (changing color
-                                        # of the guess frames), time to wait between
-        self.PROCESS_GUESS_WAITTIME = 1  # updating successive frames.
+        self.MESSAGE_DISPLAY_TIME_SECS = 5
+        
+        self.PROCESS_GUESS_WAITTIME = 1  
     
     def makeWrdLst(self):
         """
         Reads through the lists of words provided and makes them into a list for later usages
         """
-        self.longwrd = []   #Creates a list of all the words
+        self.longwrd = []   #Creates a list of all the words acceptable as guesses
         f = open( self.LONG_WORDLIST_FILENAME, 'r')
         for wrd in f:
             self.longwrd.append(wrd.strip())
@@ -167,7 +163,7 @@ class Wordy:
 
         self.TotalWordsCount = len(self.longwrd)
 
-        self.shortwrd = []  #Creates a list of all words the wordle can use
+        self.shortwrd = []  #Creates a list of all words the wordle can choose from
         f = open(self.SHORT_WORDLIST_FILENAME, 'r')
         for wrd in f:
             self.shortwrd.append(wrd.strip())
@@ -235,14 +231,6 @@ class Wordy:
         """Displays the buttons onto key screen"""
         for r in range(len(self.KEYBOARD_BUTTON_NAMES)):
             for c in range(len(self.KEYBOARD_BUTTON_NAMES[r])):
-
-                # Define a handler for this button.
-                # Note that functions can be dynamically 
-                # defined, as is happening here.  Each
-                # button gets its own hander.  
-                # But each handler calls the same method
-                # (button_handler), but with a parameter
-                # that specifies which button was pressed.
                 
                 def handler(key = self.KEYBOARD_BUTTON_NAMES[r][c]):
                     self.button_handler(key)
@@ -253,11 +241,8 @@ class Wordy:
                         fg=self.KEYBOARD_BUTTON_TEXT_BEGIN, 
                         font=self.FONT_FAMILY,
                         command = handler)
+                
                 button.grid(row = r + 1, column = c + 1, padx = 10 )
-
-                    # Put the button in a dictionary of buttons
-                    # where the key is the button text, and the
-                    # value is the button object.
                 self.buttons[self.KEYBOARD_BUTTON_NAMES[r][c]] = button
                 
                     
@@ -277,7 +262,6 @@ class Wordy:
         Changes the color of the button that was pressed
         """ 
         if(self.curColumn <= self.WORD_SIZE and self.curRow -1 < self.NUM_GUESSES and self.gamestarted == True):
-            #self.buttons[text]['fg'] = self.KEYBOARD_BUTTON_TEXT_WRONG
             let = tk.Message(self.game_frame, text= text, font=self.FONT_FAMILY, aspect= self.FONT_SIZE_GUESS, bg= 'white')
             let.grid(row= self.curRow, column= self.curColumn)
             self.curColumn += 1
@@ -323,7 +307,7 @@ class Wordy:
                 self.messageString.set('Word is not long enough')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
     
-    #renormalize the probabilities of letters in 5 dictionaries because letters got removed
+    #renormalize the probabilities of letters in the 5 dictionaries because letters got removed
     #from previous guess
     def renormalization(self):
             scalingGFactor = [0,0,0,0,0]
@@ -358,9 +342,6 @@ class Wordy:
                 #keeps track of where correct letters are located when found so we can test other uncertain letters
                 #in that already determined location's answer
                 self.correctLetters[i] = self.curGuess[i]
-                #sets value/probability to 1 and removes all other letters from that list because found correct letter in
-                #correct spot
-                #self.DL04[i][self.curGuess[i]]
                 self.DL04[i] = {self.correctLetters[i]: 1.0}
 
                 frames  = tk.Frame(self.game_frame,
