@@ -156,17 +156,21 @@ class Wordy:
         Reads through the lists of words provided and makes them into a list for later usages
         """
         self.longwrd = []   #Creates a list of all the words acceptable as guesses
+        self.tempLongwrd = []
         f = open( self.LONG_WORDLIST_FILENAME, 'r')
         for wrd in f:
             self.longwrd.append(wrd.strip())
+            self.tempLongwrd.append(wrd.strip())
         f.close()
 
         self.TotalWordsCount = len(self.longwrd)
 
         self.shortwrd = []  #Creates a list of all words the wordle can choose from
+        self.tempShortwrd = []
         f = open(self.SHORT_WORDLIST_FILENAME, 'r')
         for wrd in f:
             self.shortwrd.append(wrd.strip())
+            self.tempShortwrd.append(wrd.strip())
         f.close()
 
         self.PossibleWordsCount = len(self.shortwrd)
@@ -313,18 +317,35 @@ class Wordy:
             scalingGFactor = [0,0,0,0,0]
             print(self.grayRenormalizationProb)
             for i in range(5):
-                scalingGFactor[i] = 1 / 1 - self.grayRenormalizationProb[i]
+                scalingGFactor[i] = 1 - self.grayRenormalizationProb[i]
             curG = 0
             for dictionary in self.DL04:
+                #self.tempLongwrd[:] = [x for x in self.tempLongwrd if x[curG] in dictionary.keys()]
+                #self.tempShortwrd[:] = [x for x in self.tempShortwrd if x[curG] in dictionary.keys()]
+                for i in range(len(self.tempLongwrd) - 1, -1, -1):
+                    if self.tempLongwrd[i][curG].upper() not in dictionary.keys():
+                        del self.tempLongwrd[i]
+                for i in range(len(self.tempShortwrd) - 1, -1, -1):
+                    if self.tempShortwrd[i][curG].upper() not in dictionary.keys():
+                        del self.tempShortwrd[i]
+
+
                 if len(dictionary) > 1:
                     for key in dictionary:
                         if key not in self.grayLetters:
-                            dictionary[key] = round((dictionary[key]  * scalingGFactor[curG]), 6)
+                            dictionary[key] = (dictionary[key]/scalingGFactor[curG])
                 lst1 = dictionary.values()
                 print(sum(lst1))
                 curG += 1
+            self.TotalWordsCount = len(self.tempLongwrd)
+            self.PossibleWordsCount = len(self.tempShortwrd)
+            print(self.TotalWordsCount, self.PossibleWordsCount)
+            self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
+            self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
+            self.curEntRem.set(self.currentEntropy + "\n" +str(self.curEntropyVal))
             self.grayRenormalizationProb = [0,0,0,0,0]
             self.grayLetters = []
+
 
     def displayEntered(self):
         """
@@ -380,7 +401,6 @@ class Wordy:
                                     self.grayRenormalizationProb[t] += self.DL04[t][self.curGuess[t]]
                                     self.DL04[t] = {key: self.DL04[t][key] for key in self.DL04[t]
                                                     if key != self.curGuess[t]}
-                                    self.renormalization()
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] == i:
                             frames  = tk.Frame(self.game_frame,
                                         borderwidth = 1, relief = 'solid',
@@ -530,20 +550,25 @@ class Wordy:
 
     #handles wordle solver algorithm
     def solverAlg(self):
+        self.wordsRem = tk.StringVar()
+        self.possWordsRem = tk.StringVar()
+        self.curEntRem = tk.StringVar()
+
+        self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
+        self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
+        self.curEntRem.set(self.currentEntropy + "\n" +str(self.curEntropyVal))
         if(self.gamestarted == True):
             if self.solver_bool.get() == True:
                 self.solverTitle = tk.Message(self.curInfoFrame,text = self.Title, 
                                                     font = self.HeaderBig, justify = "center",
                                                     width = 180)
-                self.wordsRemaining = tk.Message(self.curInfoFrame,text = self.totalWordsRemaining + "\n" +
-                                                 str(self.TotalWordsCount), 
+                self.wordsRemaining = tk.Message(self.curInfoFrame,textvariable= self.wordsRem, 
                                                     font = self.Header,justify = "center",
                                                     width = 180)
-                self.curEnt = tk.Message(self.curInfoFrame,text = self.currentEntropy + "\n" +
-                                         str(self.curEntropyVal), 
+                self.curEnt = tk.Message(self.curInfoFrame,textvariable= self.curEntRem, 
                                                     font = self.Header, justify = "center",
                                                     width = 180)
-                self.posWords = tk.Message(self.curInfoFrame,text = self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount), 
+                self.posWords = tk.Message(self.curInfoFrame,textvariable= self.possWordsRem, 
                                                     font = self.Header, justify = "center",
                                                     width = 180)
                 self.curRecommendations = tk.Message(self.curInfoFrame, text = self.RecommendationHeader,
