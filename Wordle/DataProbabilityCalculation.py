@@ -43,7 +43,7 @@ for ch in alphabet:
 
 #create dictionary for dictLetterFreq(dictionary for letters frequency)
 for line in csv_reader:
-    dictLetterFreq[line[0]] = (round((float(line[1]) / 100.0), 6))
+    dictLetterFreq[line[0]] = (float(line[1]) / 100.0)
 
 #loop through the file line by line and char by char for summation of all occurrences of letters in
 #specific places in the 5 letter word placed in dictionary values which is a 5 length list for 
@@ -72,6 +72,12 @@ for key, value  in dictLWFreq.items():
         value[i] = (round((int(value[i]) / totalLettersdictLWFreq[key]), 6))
         i+= 1
     i = 0
+
+    def DictLetterFreq():
+        return dictLetterFreq
+    
+    def DictLetterWordFreq():
+        return dictLWFreq
 
 #so print doesn't execute when running program for creating graphs
 if __name__ == '__main__':

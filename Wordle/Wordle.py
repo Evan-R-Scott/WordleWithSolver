@@ -26,8 +26,7 @@ class Wordy:
         self.SolverInfo()
         self.messageScreen()        #Presents messages to the user
         self.parameterScreen()      #The Parameter Screen
-        self.buttonFrame()           #Houses start and quit button
-        self.renormalization()      
+        self.buttonFrame()           #Houses start and quit button    
         
         #Change size of screen and spacing
     def variablesDontEdit(self):
@@ -53,8 +52,13 @@ class Wordy:
         self.DL04 =  []
         for _ in range(5):
             self.DL04.append(DataProbabilityCalculation.dictLetterFreq)
-        print(self.DL04)
 
+        self.dictLetterFreqVals = DataProbabilityCalculation.dictLetterFreq
+        print(self.dictLetterFreqVals)
+        lst4 = self.dictLetterFreqVals.values()
+        self.curProb = sum(lst4)
+        print(self.curProb)
+        print('\n')
         self.dictLWFreq = DataProbabilityCalculation.dictLWFreq
 
         # Size of the frame that holds all guesses.  This is the upper left
@@ -93,20 +97,25 @@ class Wordy:
 
         #Trackers for Green/Yellow/Gray Letters
         self.correctLetters = [0,0,0,0,0]
-        self.yellowLetters = []
         self.grayLetters = []
+        self.totalGrayLetters = []
+        self.grayRenormalizationProb = [0,0,0,0,0]
+        self.tempLocYellow = [[],[],[],[],[]]
 
         #solver variables
         self.FontHeader = 8
-        self.FontHeader2 = 9
         self.FontRecommendations = 4
         self.Header = (self.FONT_FAMILY, self.FontHeader)
-        self.HeaderBig = (self.FONT_FAMILY, self.FontHeader2)
+        self.HeaderBig = (self.FONT_FAMILY, self.FontHeader, 'bold')
+        self.Title = "Solver"
         self.totalWordsRemaining = "Total Pool of Words Remaining:"
         self.currentEntropy = "Current Entropy/Uncertainty:"
         self.possibleOutcomeText = "Potential Answers Remaining:"
         self.RecommendationHeader = "Top Picks      ||   E[Info]   ||   P(word)"
         self.SolverFrameWidth = 200
+
+        self.restartGame = False
+
 
         # Parameters for the keyboard frame
         self.KEYBOARD_FRAME_HEIGHT = 200
@@ -284,12 +293,16 @@ class Wordy:
         """Handle what happens when enter is pressed; it is not a word, it is too short, it is the right answer or all guesses are used up"""
         if self.curRow == self.NUM_GUESSES:
             self.gamestarted = False
-            self.messageString.set('Guesses used up. Word was: ' + self.answer + '. Game over.')
+            self.messageString.set('Guesses used up. Word was: ' + self.answer + '. Game over.' + '\n\n' + 'Would you like to play again?')
+            self.restartGame = True
+            self.startBTN.set("Play Again")
         elif self.answer == self.curGuess:
             time.sleep(self.PROCESS_GUESS_WAITTIME)
             self.displayEntered()
             self.gamestarted = False
-            self.messageString.set('Correct. Nice job. Game over')
+            self.messageString.set('Correct. Nice job. Game over' + '\n\n' + 'Would you like to play again?')
+            self.restartGame = True
+            self.startBTN.set("Play Again")
         elif(self.curRow <= self.NUM_GUESSES and self.gamestarted == True):
             if(str.lower(self.curGuess) in self.longwrd and self.guess_type_bool.get() == True and self.curColumn-1 == self.WORD_SIZE):
                 time.sleep(self.PROCESS_GUESS_WAITTIME)
@@ -313,8 +326,22 @@ class Wordy:
     #renormalize the probabilities of letters in 5 dictionaries because letters got removed
     #from previous guess
     def renormalization(self):
-        print("hi")
-                  
+            scalingGFactor = [0,0,0,0,0]
+            print(self.grayRenormalizationProb)
+            for i in range(5):
+                scalingGFactor[i] = 1 / 1 - self.grayRenormalizationProb[i]
+            curG = 0
+            for dictionary in self.DL04:
+                if len(dictionary) > 1:
+                    for key in dictionary:
+                        if key not in self.grayLetters:
+                            dictionary[key] = round((dictionary[key]  * scalingGFactor[curG]), 6)
+                lst1 = dictionary.values()
+                print(sum(lst1))
+                curG += 1
+            self.grayRenormalizationProb = [0,0,0,0,0]
+            self.grayLetters = []
+
     def displayEntered(self):
         """
         Creates a dictionary of the letters and keys and the number of occurances and makes sure that is a letter occurs 
@@ -334,7 +361,7 @@ class Wordy:
                 #sets value/probability to 1 and removes all other letters from that list because found correct letter in
                 #correct spot
                 #self.DL04[i][self.curGuess[i]]
-                self.DL04[i] = {self.curGuess[i]: 1.0}
+                self.DL04[i] = {self.correctLetters[i]: 1.0}
 
                 frames  = tk.Frame(self.game_frame,
                             borderwidth = 1, relief = 'solid',
@@ -364,12 +391,16 @@ class Wordy:
                 else:
                     num = guessDic[i]
                 for t in range(len(self.curGuess)):
-                    if num > 0:
+                    #if num > 0:
+                        if self.curGuess[t] != self.answer[t] and self.curGuess[t] in answerDic.keys():
+                            
+                            if (self.curGuess[t] not in self.tempLocYellow[t] and (len(self.DL04[t]) > 1)):
+                                    self.tempLocYellow[t].append(self.curGuess[t])
+                                    self.grayRenormalizationProb[t] += self.DL04[t][self.curGuess[t]]
+                                    self.DL04[t] = {key: self.DL04[t][key] for key in self.DL04[t]
+                                                    if key != self.curGuess[t]}
+                                    self.renormalization()
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] == i:
-                            #del below removes that letter at key i from directionory t in list because
-                            #it appeared yellow
-                            del self.DL04[t][str(i)]
-
                             frames  = tk.Frame(self.game_frame,
                                         borderwidth = 1, relief = 'solid',
                                         width = self.GUESS_FRAME_SIZE,
@@ -382,14 +413,24 @@ class Wordy:
                             num -= 1
                             lst2.append(t+1)
                             self.buttons[self.curGuess[t]]['fg'] = self.GUESS_FRAME_BG_CORRECT_WRONG_LOC
-        
+
+        #save gray letters to be removed from letter dictionaries in specific spots
+        for ch in self.curGuess:
+            if ch not in self.answer and ch not in self.totalGrayLetters:
+                for i in range(5):
+                    if ((len(self.DL04[i]) != 1)):
+                        self.grayRenormalizationProb[i] += self.DL04[i][ch]
+                self.totalGrayLetters.append(ch)
+                self.grayLetters.append(ch)
+
+        for dictionary in self.DL04:
+            for ch in self.grayLetters:
+                if ch in dictionary:
+                    del dictionary[ch]
+            #dictionary = {key: dictionary[key] for key in dictionary if key not in self.grayLetters}
+
         for i in lst1: #if it has not changed colors then it will go grey
             if i not in lst2:
-                for j in range(5):
-                    print(str(self.curGuess[i-1]))
-                    del self.DL04[j][str(self.curGuess[i-1])]
-                    #del self.DL04[j][str(self.curGuess[j])]
-                print(self.DL04)
                 frames  = tk.Frame(self.game_frame,
                                             borderwidth = 1, relief = 'solid',
                                             width = self.GUESS_FRAME_SIZE,
@@ -400,15 +441,11 @@ class Wordy:
                                 aspect= self.FONT_SIZE_GUESS, fg= 'white', bg= self.GUESS_FRAME_BG_WRONG)
                 let.grid(row= self.curRow, column= i)
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
-        
-        self.renormalization()
 
+        self.renormalization()
     def SolverInfo(self):
-        self.totalWordsLeft = tk.StringVar()
-        self.curEntropy = tk.StringVar()
-        self.possibleWordsLeft = tk.StringVar()
         self.curInfoFrame = tk.Frame(self.solver_frame, borderwidth = 1, relief = 'solid',
-                                     height = self.CONTROL_FRAME_HEIGHT / 4,
+                                     height = self.CONTROL_FRAME_HEIGHT,
                                      width = self.SolverFrameWidth)
         self.curInfoFrame.grid(row = 1, column = 1)
         self.curInfoFrame.grid_propagate(False)
@@ -420,7 +457,7 @@ class Wordy:
             height = self.CONTROL_FRAME_HEIGHT/3, width = self.CONTROL_FRAME_WIDTH)
         self.messageFrame.grid(row = 1, column = 1)
         self.messageFrame.grid_propagate(False)
-        self.message = tk.Message(self.messageFrame, textvariable= self.messageString, width= self.CONTROL_FRAME_WIDTH)
+        self.message = tk.Message(self.messageFrame, textvariable= self.messageString, justify = 'center', width= self.CONTROL_FRAME_WIDTH)
         self.message.grid(row= 1, column=1)
         self.messageFrame.rowconfigure(0, weight=1)
         self.messageFrame.rowconfigure(2, weight=1)
@@ -490,11 +527,13 @@ class Wordy:
         self.button.grid_propagate(False)
 
         # Put a start button in the bottom frame
-        start_button  = tk.Button(self.button, text = "Start Game", command = self.start)
+        self.startBTN = tk.StringVar()
+        self.startBTN.set("Start Game")
+        start_button  = tk.Button(self.button, height = 3, width = 10, textvariable = self.startBTN, command = self.start)
         start_button.grid(row = 1, column=1)
 
         # Put a quit button in the bottom frame
-        quit_button  = tk.Button(self.button, text = "Quit", command = self.quit)
+        quit_button  = tk.Button(self.button, height = 3, width = 10 ,text = "Quit", command = self.quit)
         quit_button.grid(row = 1, column=3)
 
         # Centers the button in its frame
@@ -512,23 +551,27 @@ class Wordy:
     def solverAlg(self):
         if(self.gamestarted == True):
             if self.solver_bool.get() == True:
+                self.solverTitle = tk.Message(self.curInfoFrame,text = self.Title, 
+                                                    font = self.HeaderBig, justify = "center",
+                                                    width = 180)
                 self.wordsRemaining = tk.Message(self.curInfoFrame,text = self.totalWordsRemaining + "\n" +
                                                  str(self.TotalWordsCount), 
-                                                    font = self.Header,
+                                                    font = self.Header,justify = "center",
                                                     width = 180)
                 self.curEnt = tk.Message(self.curInfoFrame,text = self.currentEntropy + "\n" +
                                          str(self.curEntropyVal), 
-                                                    font = self.Header,
+                                                    font = self.Header, justify = "center",
                                                     width = 180)
                 self.posWords = tk.Message(self.curInfoFrame,text = self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount), 
-                                                    font = self.Header,
+                                                    font = self.Header, justify = "center",
                                                     width = 180)
                 self.curRecommendations = tk.Message(self.curInfoFrame, text = self.RecommendationHeader,
                                                      font = self.HeaderBig, width = 190)
-                self.wordsRemaining.grid(row =1, column = 1)
-                self.curEnt.grid(row = 3, column = 1)
-                self.posWords.grid(row =2, column = 1)
-                self.curRecommendations.grid(row = 4, column = 1, ipady = 10)
+                self.solverTitle.grid(row =1, column = 1, padx = 5)
+                self.wordsRemaining.grid(row =2, column = 1)
+                self.posWords.grid(row = 3, column = 1)
+                self.curEnt.grid(row = 4, column = 1)
+                self.curRecommendations.grid(row = 5, column = 1, ipady = 10)
 
     #Handlers For Buttons and messages
     def mustBeWord(self):
@@ -541,6 +584,9 @@ class Wordy:
 
     def start(self):
         """Checks if game has been started if not look and see if it is in an exept condition else display message"""
+        if(self.restartGame):
+            self.window.destroy()
+            Wordy()
         if(len(self.curGuess) == 0):
             self.display_answer()
             if(self.gamestarted == False):
@@ -552,7 +598,7 @@ class Wordy:
             if(self.gamestarted == True):
                 self.solverAlg()
                 self.messageString.set('Game has started')
-                self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
+                self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*500, self.remove_message)
 
     def quit(self):
         """destroy window"""
