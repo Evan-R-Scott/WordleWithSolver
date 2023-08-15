@@ -12,6 +12,7 @@ location of these said letters in a 5 letter word
 """
 #import statements
 import DataProbabilityCalculation
+import AlgorithmCalc
 
 import random
 import tkinter as tk
@@ -20,6 +21,7 @@ import tkinter.font as font
 import time
 
 from enum import Enum
+from decimal import Decimal, getcontext
 class Wordy:
     #constructor
     def __init__(self):
@@ -59,18 +61,14 @@ class Wordy:
         self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/short_wordlist.txt"
 
         #Initialize the list containing 5 dictionaries for each specific spot with letters and probabilities
-        #that get removed and renormalised bsaed on guess making letters green/gray/yellow
+        #that get removed and renormalised based on guess making letters green/gray/yellow
         self.DL04 =  []
         for _ in range(5):
             self.DL04.append(DataProbabilityCalculation.dictLetterFreq)
+        self.totalLettersdictLWFreq = DataProbabilityCalculation. totalLettersdictLWFreq
 
-        self.dictLetterFreqVals = DataProbabilityCalculation.dictLetterFreq
-        print(self.dictLetterFreqVals)
-        lst4 = self.dictLetterFreqVals.values()
-        self.curProb = sum(lst4)
-        print(self.curProb)
-        print('\n')
-        self.dictLWFreq = DataProbabilityCalculation.dictLWFreq
+        #create instance of Solver Calculations class
+        self.Solver = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
 
         # Size of the frame that holds all guesses.  This is the upper left
         # frame in the window.
@@ -105,9 +103,6 @@ class Wordy:
 
         #Trackers for Green/Yellow/Gray Letters
         self.correctLetters = [0,0,0,0,0]
-        self.grayLetters = []
-        self.totalGrayLetters = []
-        self.grayRenormalizationProb = [0,0,0,0,0]
         self.tempLocYellow = [[],[],[],[],[]]
 
         #Solver variables
@@ -156,21 +151,21 @@ class Wordy:
         Reads through the lists of words provided and makes them into a list for later usages
         """
         self.longwrd = []   #Creates a list of all the words acceptable as guesses
-        self.tempLongwrd = []
+        self.curTotalwrds = []
         f = open( self.LONG_WORDLIST_FILENAME, 'r')
         for wrd in f:
             self.longwrd.append(wrd.strip())
-            self.tempLongwrd.append(wrd.strip())
+            self.curTotalwrds.append(wrd.strip())
         f.close()
 
         self.TotalWordsCount = len(self.longwrd)
 
         self.shortwrd = []  #Creates a list of all words the wordle can choose from
-        self.tempShortwrd = []
+        self.curPosswrds = []
         f = open(self.SHORT_WORDLIST_FILENAME, 'r')
         for wrd in f:
             self.shortwrd.append(wrd.strip())
-            self.tempShortwrd.append(wrd.strip())
+            self.curPosswrds.append(wrd.strip())
         f.close()
 
         self.PossibleWordsCount = len(self.shortwrd)
@@ -215,9 +210,7 @@ class Wordy:
                         height= self.GUESS_FRAME_SIZE,
                         bg=self.GUESS_FRAME_BG_BEGIN)
                 frames.grid(row = r + 1, column = c + 1, padx = self.GUESS_FRAME_PADDING, pady= self.GUESS_FRAME_PADDING)
-                
-
-                
+                        
         self.game_frame.rowconfigure(0, weight = 1)
         self.game_frame.rowconfigure(self.NUM_GUESSES + 1, weight = 1)
         self.game_frame.columnconfigure(0, weight = 1)
@@ -310,42 +303,34 @@ class Wordy:
             else: #Word is not long enough
                 self.messageString.set('Word is not long enough')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
-    
-    #renormalize the probabilities of letters in the 5 dictionaries because letters got removed
-    #from previous guess
+
+    #updates the total word count and possible word count
+    #renormalizes the probabilities of letters in the 5 dictionaries because 
+    # letters got removed from previous guess
     def renormalization(self):
-            scalingGFactor = [0,0,0,0,0]
-            print(self.grayRenormalizationProb)
-            for i in range(5):
-                scalingGFactor[i] = 1 - self.grayRenormalizationProb[i]
+            getcontext().prec = 30
             curG = 0
             for dictionary in self.DL04:
-                #self.tempLongwrd[:] = [x for x in self.tempLongwrd if x[curG] in dictionary.keys()]
-                #self.tempShortwrd[:] = [x for x in self.tempShortwrd if x[curG] in dictionary.keys()]
-                for i in range(len(self.tempLongwrd) - 1, -1, -1):
-                    if self.tempLongwrd[i][curG].upper() not in dictionary.keys():
-                        del self.tempLongwrd[i]
-                for i in range(len(self.tempShortwrd) - 1, -1, -1):
-                    if self.tempShortwrd[i][curG].upper() not in dictionary.keys():
-                        del self.tempShortwrd[i]
+                for i in range(len(self.curTotalwrds) - 1, -1, -1):
+                    if self.curTotalwrds[i][curG].upper() not in dictionary.keys():
+                        del self.curTotalwrds[i]
+                for i in range(len(self.curPosswrds) - 1, -1, -1):
+                    if self.curPosswrds[i][curG].upper() not in dictionary.keys():
+                        del self.curPosswrds[i]
 
-
+                totalSum =  sum(Decimal(value) for value in dictionary.values())
                 if len(dictionary) > 1:
                     for key in dictionary:
-                        if key not in self.grayLetters:
-                            dictionary[key] = (dictionary[key]/scalingGFactor[curG])
-                lst1 = dictionary.values()
-                print(sum(lst1))
+                        dictionary[key] = round(Decimal(dictionary[key])/ totalSum, 6)
                 curG += 1
-            self.TotalWordsCount = len(self.tempLongwrd)
-            self.PossibleWordsCount = len(self.tempShortwrd)
-            print(self.TotalWordsCount, self.PossibleWordsCount)
+
+            self.TotalWordsCount = len(self.curTotalwrds)
+            self.PossibleWordsCount = len(self.curPosswrds)
             self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
             self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
             self.curEntRem.set(self.currentEntropy + "\n" +str(self.curEntropyVal))
-            self.grayRenormalizationProb = [0,0,0,0,0]
-            self.grayLetters = []
 
+            self.SolverCalculations()
 
     def displayEntered(self):
         """
@@ -364,7 +349,7 @@ class Wordy:
                 #in that already determined location's answer
                 self.correctLetters[i] = self.curGuess[i]
                 self.DL04[i] = {self.correctLetters[i]: 1.0}
-
+                #Makes letter frame green
                 frames  = tk.Frame(self.game_frame,
                             borderwidth = 1, relief = 'solid',
                             width = self.GUESS_FRAME_SIZE,
@@ -375,6 +360,7 @@ class Wordy:
                             aspect= self.FONT_SIZE_GUESS, fg= 'white', bg= self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC)
                 let.grid(row= self.curRow, column= i + 1)
                 self.buttons[self.curGuess[i]]['fg'] = self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC
+
             else:
                 if(self.curGuess[i] in guessDic):
                     guessDic[self.curGuess[i]] += 1
@@ -385,6 +371,11 @@ class Wordy:
                     answerDic[self.answer[i]] += 1
                 else:
                     answerDic[self.answer[i]] = 1
+            
+            #Handle gray letter removal from dictionaries
+            for dictionary in self.DL04:
+                if self.curGuess[i] not in self.answer and self.curGuess[i] in dictionary:
+                    del dictionary[self.curGuess[i]]
 
         for i in guessDic.keys(): #looks through the dictionary containing letters in the guess and the number of times it occurs and adds yellow frames
             if i in answerDic.keys():
@@ -395,12 +386,12 @@ class Wordy:
                 for t in range(len(self.curGuess)):
                     #if num > 0:
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] in answerDic.keys():
-                            
+                            #Handle yellow letter removal from only the current dictionary
                             if (self.curGuess[t] not in self.tempLocYellow[t] and (len(self.DL04[t]) > 1)):
                                     self.tempLocYellow[t].append(self.curGuess[t])
-                                    self.grayRenormalizationProb[t] += self.DL04[t][self.curGuess[t]]
                                     self.DL04[t] = {key: self.DL04[t][key] for key in self.DL04[t]
                                                     if key != self.curGuess[t]}
+                        #Makes letter frame yellow
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] == i:
                             frames  = tk.Frame(self.game_frame,
                                         borderwidth = 1, relief = 'solid',
@@ -415,23 +406,9 @@ class Wordy:
                             lst2.append(t+1)
                             self.buttons[self.curGuess[t]]['fg'] = self.GUESS_FRAME_BG_CORRECT_WRONG_LOC
 
-        #save gray letters to be removed from letter dictionaries in specific spots
-        for ch in self.curGuess:
-            if ch not in self.answer and ch not in self.totalGrayLetters:
-                for i in range(5):
-                    if ((len(self.DL04[i]) != 1)):
-                        self.grayRenormalizationProb[i] += self.DL04[i][ch]
-                self.totalGrayLetters.append(ch)
-                self.grayLetters.append(ch)
-
-        for dictionary in self.DL04:
-            for ch in self.grayLetters:
-                if ch in dictionary:
-                    del dictionary[ch]
-            #dictionary = {key: dictionary[key] for key in dictionary if key not in self.grayLetters}
-
         for i in lst1: #if it has not changed colors then it will go grey
             if i not in lst2:
+                #Makes letter frame gray
                 frames  = tk.Frame(self.game_frame,
                                             borderwidth = 1, relief = 'solid',
                                             width = self.GUESS_FRAME_SIZE,
@@ -444,12 +421,24 @@ class Wordy:
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
 
         self.renormalization()
+    
+    #creates frame for solver
     def SolverInfo(self):
         self.curInfoFrame = tk.Frame(self.solver_frame, borderwidth = 1, relief = 'solid',
                                      height = self.CONTROL_FRAME_HEIGHT,
                                      width = self.SolverFrameWidth)
         self.curInfoFrame.grid(row = 1, column = 1)
         self.curInfoFrame.grid_propagate(False)
+
+    def SolverCalculations(self):
+        wordValues = self.Solver.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.DL04)
+        print(wordValues)
+        if len(wordValues) > 10:
+            N = 10
+            out = dict(list(wordValues.items())[0 :N])
+            print("Top 10 Recommendations are:\n", out)
+        else:
+            print("Top Recommendations are:\n", wordValues)
        
     def messageScreen(self):
         # Message Frame
@@ -498,9 +487,9 @@ class Wordy:
         self.displayWord = tk.Message(self.parameter, textvariable= self.displayWordString, width= self.CONTROL_FRAME_WIDTH//2)
         self.displayWord.grid(row= 2, column= 2)
 
-        #Solver Option
+        #Solver enable option
         self.solver = tk.Checkbutton(self.parameter, text="Solver Assistance Algorithm", 
-                            var = self.solver_bool, command = self.solverAlg, state = self.runChecks)
+                            var = self.solver_bool, command = self.solverDisplay, state = self.runChecks)
         self.solver.grid(row = 4, column = 1, sticky = tk.W, pady = self.GUESS_FRAME_PADDING)
 
         #specify Word
@@ -549,7 +538,7 @@ class Wordy:
         self.window.mainloop()
 
     #handles wordle solver algorithm
-    def solverAlg(self):
+    def solverDisplay(self):
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
@@ -596,13 +585,13 @@ class Wordy:
         if(len(self.curGuess) == 0):
             self.display_answer()
             if(self.gamestarted == False):
-                self.solverAlg()
+                self.solverDisplay()
                 self.force_word_check()
                 if(self.gamestarted == True):
                     self.runChecks = 'disabled'
                     self.parameterScreen()
             if(self.gamestarted == True):
-                self.solverAlg()
+                self.solverDisplay()
                 self.messageString.set('Game has started')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*500, self.remove_message)
 

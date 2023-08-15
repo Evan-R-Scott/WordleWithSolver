@@ -31,6 +31,7 @@ csv_reader = csv.reader(d, delimiter = ',')
 dictLWFreq = {}
 totalLettersdictLWFreq = {}
 dictLetterFreq = {}
+totalLetters = 0
 
 #variables for key initialization in dictionaries
 alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -56,14 +57,15 @@ for line in f:
         if char == "\n":
             continue
 
-        totalLettersdictLWFreq[chKey] +=1
+        totalLetters +=1
 
+        totalLettersdictLWFreq[chKey] +=1
         if dictLWFreq[chKey][track] == 0:
             dictLWFreq[chKey][track] = 1
         else:
             dictLWFreq[chKey][track] +=1 
             track += 1
-
+            
 i = 0
 #loop through dictLWFreq and calculate probability a letter is in each specific spot of word
 #by dividing times that letter occurred in that spot by total times that letter occurred
@@ -73,14 +75,12 @@ for key, value  in dictLWFreq.items():
         i+= 1
     i = 0
 
-    def DictLetterFreq():
-        return dictLetterFreq
-    
-    def DictLetterWordFreq():
-        return dictLWFreq
+for key, value in totalLettersdictLWFreq.items():
+    totalLettersdictLWFreq[key] = (round(value / totalLetters, 7))
 
 #so print doesn't execute when running program for creating graphs
 if __name__ == '__main__':
     #print final dictionaries
-    print("\nDictionary for probability of letter frequency is:\n",dictLetterFreq)
+    print("\nDictionary for probability of letter frequency in all english words is:\n",dictLetterFreq)
     print("\nDictionary for probability of letter in a specific location is:\n" , dictLWFreq)
+    print("\nDictionary for probability of letter frequency in 5 letter words is:\n", totalLettersdictLWFreq)

@@ -4,17 +4,40 @@
 
 #probability of a letter in a specific spot list = probability of that letter out of  the current
 #letters available in that spot * probability of that letter in that specific spot to determine weight
-
-class AlgorithmCalc:
+from decimal import Decimal, getcontext
+#calculate value of a word
+class Solver:
     #DL1 = Dictionary for possible letters and their probabilities in spot 1
-    def __init__(self, curTotalList, DL0, DL1, DL2, DL3, DL4, WordWeights):
-        self.curTotalList = curTotalList
-        self.DL0 = DL0
-        self.DL1 = DL1
-        self.DL2 = DL2
-        self.DL3 = DL3
-        self.DL4 = DL4
-        self.wordWeights = WordWeights
+    def __init__(self, letterWeights):
+        self.letterWeights = letterWeights
 
-    def AlgCalc(self):
-        pass
+    #calculate the "value" of each word out of the remaining words 
+    #based on the current information
+    def WordValueCalc(self, curTotalList, curPossList, DL04):
+        getcontext().prec = 30
+        wordValues = {}
+        for word in curTotalList:
+            if word in curPossList:
+                curWord = word + "***"
+                wordValues[word + "***"] = 0
+            else:
+                curWord = word
+                wordValues[word] = 0
+            checkDuplicates = []
+            for i in range(len(word)):
+                if word[i] not in checkDuplicates:
+                    checkDuplicates.append(word[i])
+                    wordValues[curWord] += (Decimal(self.letterWeights[word[i].upper()]) * Decimal(DL04[i][word[i].upper()]))
+            wordValues[curWord] = float(str(round(wordValues[curWord], 4)))
+
+        for word in curTotalList:
+            if word in curPossList:
+                curWord = word + "***"
+            else:
+                curWord = word
+            wordValues[curWord] = wordValues[curWord] / (sum(wordValues.values()))
+
+        sortedWordValues = dict(sorted(wordValues.items(), key = lambda x: x[1], reverse = True))
+
+        #return dictionary that has all the words and their values
+        return sortedWordValues
