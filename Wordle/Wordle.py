@@ -2,13 +2,14 @@
 """
 Made By Evan Scott
 Description: Wordle imitation program that is fully functional
-and incorporates an optional solving algorithm which learns/adapts as guesses are entered
+and incorporates an optional solving algorithm which adapts based on guesses entered
 to recommend the most optimal/value-driven guesses based on a number of factors.
+Concepts/Factors incorporated: 
 - Information Theory
 - Entropy (the minization of uncertainty in as short of steps as possible)
 - Tested data sets - (such as) frequency of letters in the english language and 
 location of these said letters in a 5 letter word
-- Renormalization of previously mentioned data
+- Renormalization
 
 """
 #import statements
@@ -17,8 +18,7 @@ import AlgorithmCalc
 
 import random
 import tkinter as tk
-
-import tkinter.font as font
+import tkinter.font
 import time
 
 from enum import Enum
@@ -26,8 +26,7 @@ from decimal import Decimal, getcontext
 class Wordy:
     #constructor
     def __init__(self):
-        
-        #function calls to initialize the game window
+        """Function calls to initialize the game window"""
         self.variablesDontEdit()    #variables that do not affect game play
         self.variablesEdit()        #The universal variables
         self.makeWrdLst()           #Makes all the words into a list
@@ -42,7 +41,7 @@ class Wordy:
         self.buttonFrame()           #Houses start and quit button    
         
     def variablesDontEdit(self):
-        """Variables used thorughout the program that don't affect the visuals"""
+        """Variables used throughout the program for accurate wordle gameplay"""
         self.gamestarted = False
         self.runChecks = 'normal'
         self.text = ''
@@ -53,7 +52,7 @@ class Wordy:
         self.curGuess = ''
 
     def variablesEdit(self):
-        # Constants
+        """Initialization of variables"""
         self.WORD_SIZE = 5  # number of letters in the hidden word
         self.NUM_GUESSES = 6 # number of guesses that the user gets 
 
@@ -149,9 +148,7 @@ class Wordy:
         self.PROCESS_GUESS_WAITTIME = 1  
     
     def makeWrdLst(self):
-        """
-        Reads through the lists of words provided and makes them into a list for later usages
-        """
+        """Reads through the words for wordle files provided and makes them into lists for later usages"""
         self.longwrd = []   #Creates a list of all the words acceptable as guesses
         self.curTotalwrds = []
         f = open( self.LONG_WORDLIST_FILENAME, 'r')
@@ -173,9 +170,7 @@ class Wordy:
         self.PossibleWordsCount = len(self.shortwrd)
 
     def setScreen(self):
-        """
-        Creates the entire window for wordle 
-        """
+        """Window for Wordle creation"""
         # Create window
         self.window = tk.Tk()
         self.window.title("Wordy")
@@ -195,7 +190,7 @@ class Wordy:
         self.solver_frame.grid_propagate(False)
 
     def gameScreen(self):
-        """Create the game play frame"""
+        """Game play frame creation"""
         self.game_frame = tk.Frame(self.window, 
             borderwidth = 1, relief = 'solid',
             height = self.PARENT_GUESS_FRAME_HEIGHT, width = self.PARENT_GUESS_FRAME_WIDTH)
@@ -219,7 +214,7 @@ class Wordy:
         self.game_frame.columnconfigure(self.WORD_SIZE + 1, weight = 1)
 
     def keyScreen(self):
-        #Key Frame
+        """Keyboard Frame"""
         self.key_frame = tk.Frame(self.window, 
             borderwidth = 1, relief = 'solid',
             height = self.KEYBOARD_FRAME_HEIGHT, width = self.PARENT_GUESS_FRAME_WIDTH)
@@ -227,7 +222,7 @@ class Wordy:
         self.key_frame.grid_propagate(False)
 
     def keybuttons(self):
-        """Displays the buttons onto key screen"""
+        """Displays the buttons onto key screen in the form of a keyboard"""
         for r in range(len(self.KEYBOARD_BUTTON_NAMES)):
             for c in range(len(self.KEYBOARD_BUTTON_NAMES[r])):
                 
@@ -258,7 +253,7 @@ class Wordy:
 
     def button_handler(self, text):
         """
-        Changes the color of the button that was pressed
+        Changes the color of the button that was pressed(green/yellow/gray)
         """ 
         if(self.curColumn <= self.WORD_SIZE and self.curRow -1 < self.NUM_GUESSES and self.gamestarted == True):
             let = tk.Message(self.game_frame, text= text, font=self.FONT_FAMILY, aspect= self.FONT_SIZE_GUESS, bg= 'white')
@@ -266,14 +261,15 @@ class Wordy:
             self.curColumn += 1
             self.curGuess += text
     def backHandler(self):
-        """If back is pressed erases the letters"""
+        """If back is pressed erases the current letter"""
         if(self.curColumn > 1 and self.gamestarted == True):
             self.curColumn -= 1
             let = tk.Message(self.game_frame, text= ' ', font=self.FONT_FAMILY, aspect= self.FONT_SIZE_GUESS, bg = 'white')
             let.grid(row= self.curRow, column= self.curColumn)
             self.curGuess = self.curGuess[0:-1]
     def enterHandler(self):
-        """Handle what happens when enter is pressed; it is not a word, it is too short, it is the right answer or all guesses are used up"""
+        """Handle what happens when enter is pressed: it is not a word, it is too short, play again,
+        it is the right answer or all guesses are used up"""
         if self.curRow == self.NUM_GUESSES:
             self.displayEntered()
             self.gamestarted = False
@@ -311,6 +307,7 @@ class Wordy:
     #renormalizes the probabilities of letters in the 5 dictionaries because 
     # letters got removed from previous guess
     def renormalization(self):
+            """Normalization of probabilities based on gray/yellow letters from guessed word"""
             getcontext().prec = 30
             curG = 0
             for dictionary in self.DL04:
@@ -337,8 +334,7 @@ class Wordy:
 
     def displayEntered(self):
         """
-        Creates a dictionary of the letters and keys and the number of occurances and makes sure that is a letter occurs 
-        multiples times it will go yellow multipule times, also handles the color transformation of the keyboard.
+        Letter handler for transitioning between gray/yellow/green both in display and solver algorithm
         """
         guessDic = {} #keys as letters and values as number of occurances
         answerDic = {}
@@ -425,8 +421,8 @@ class Wordy:
 
         self.renormalization()
     
-    #creates frame for solver
     def SolverFrame(self):
+        """Solver Frame"""
         self.curInfoFrame = tk.Frame(self.solver_frame, borderwidth = 1, relief = 'solid',
                                      height = self.CONTROL_FRAME_HEIGHT,
                                      width = self.SolverFrameWidth)
@@ -434,6 +430,7 @@ class Wordy:
         self.curInfoFrame.grid_propagate(False)
 
     def SolverCalculations(self):
+        """Probability and Entropy calculations top recommendations handler"""
         wordValues = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
         #print(wordValues)
         if len(wordValues) > 10:
@@ -447,7 +444,7 @@ class Wordy:
         self.solverDisplay()
 
     def messageScreen(self):
-        # Message Frame
+        """Message Frame"""
         self.messageString = tk.StringVar()
         self.messageFrame = tk.Frame(self.conrtol, borderwidth = 1, relief = 'solid',
             height = self.CONTROL_FRAME_HEIGHT/3, width = self.CONTROL_FRAME_WIDTH)
@@ -461,6 +458,7 @@ class Wordy:
         self.messageFrame.columnconfigure(2, weight=1)
 
     def parameterScreen(self):
+        """ Initialize Parameter frame and checkbox options within"""
         if(self.gamestarted == False):
             self.specify_word_bool = tk.BooleanVar()
             self.specify_word_bool.set(False)
@@ -543,8 +541,8 @@ class Wordy:
         
         self.window.mainloop()
 
-    #handles wordle solver algorithm
     def solverDisplay(self):
+        """Handles the display of the results from the solver algorithm in solver frame"""
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
@@ -597,7 +595,7 @@ class Wordy:
                 self.guess_type.deselect()
 
     def play(self):
-        """Checks if game has been started if not look and see if it is in an exept condition else display message"""
+        """Play Again handling and game starting execution"""
         if(self.restartGame):
             self.window.destroy()
             Wordy()
@@ -661,7 +659,6 @@ class Wordy:
     def remove_message(self):
         """removes message string"""
         self.messageString.set('')
-
 
 if __name__ == "__main__":
    Wordy()
