@@ -1,3 +1,4 @@
+"""                      RUN ME FOR Initial Dataset Dictionaries            """
 #This program scales the 2 data set: LetterFrequency.txt and Long_wordlist.txt down to a 0 to
 # 1 range >>> explanation below 
 

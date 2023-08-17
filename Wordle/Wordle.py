@@ -1,3 +1,4 @@
+"""                               RUN ME FOR WORDLE              """
 """
 Made By Evan Scott
 Description: Wordle imitation program that is fully functional
@@ -11,7 +12,7 @@ location of these said letters in a 5 letter word
 
 """
 #import statements
-import DataProbabilityCalculation
+import DatasetDictionaryInitialization
 import AlgorithmCalc
 
 import random
@@ -35,7 +36,7 @@ class Wordy:
         self.guessFrames()          #Builds the frame for guesses
         self.keyScreen()            #Builds the keyboard frame
         self.keybuttons()           #builds the keys/functionality
-        self.SolverInfo()           #Builds the solver frame
+        self.SolverFrame()           #Builds the solver frame
         self.messageScreen()        #Presents messages to the user
         self.parameterScreen()      #The Parameter Screen
         self.buttonFrame()           #Houses start and quit button    
@@ -64,11 +65,12 @@ class Wordy:
         #that get removed and renormalised based on guess making letters green/gray/yellow
         self.DL04 =  []
         for _ in range(5):
-            self.DL04.append(DataProbabilityCalculation.dictLetterFreq)
-        self.totalLettersdictLWFreq = DataProbabilityCalculation. totalLettersdictLWFreq
+            self.DL04.append(DatasetDictionaryInitialization.dictLetterFreq)
+        self.totalLettersdictLWFreq = DatasetDictionaryInitialization.totalLettersdictLWFreq
+        self.dictLWFreq = DatasetDictionaryInitialization.dictLWFreq
 
         #create instance of Solver Calculations class
-        self.Solver = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
+        self.SolverClass = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
 
         # Size of the frame that holds all guesses.  This is the upper left
         # frame in the window.
@@ -114,7 +116,7 @@ class Wordy:
         self.totalWordsRemaining = "Total Pool of Words Remaining:"
         self.currentEntropy = "Current Entropy/Uncertainty:"
         self.possibleOutcomeText = "Potential Answers Remaining:"
-        self.RecommendationHeader = "Top Picks      ||   E[Info]   ||   P(word)"
+        self.RecommendationHeader = "Top Picks    ||   E[Info]   ||   P(word)"
         self.SolverFrameWidth = 200
 
         self.restartGame = False
@@ -273,6 +275,7 @@ class Wordy:
     def enterHandler(self):
         """Handle what happens when enter is pressed; it is not a word, it is too short, it is the right answer or all guesses are used up"""
         if self.curRow == self.NUM_GUESSES:
+            self.displayEntered()
             self.gamestarted = False
             self.messageString.set('Guesses used up. Word was: ' + self.answer + '. Game over.' + '\n\n' + 'Would you like to play again?')
             self.restartGame = True
@@ -423,7 +426,7 @@ class Wordy:
         self.renormalization()
     
     #creates frame for solver
-    def SolverInfo(self):
+    def SolverFrame(self):
         self.curInfoFrame = tk.Frame(self.solver_frame, borderwidth = 1, relief = 'solid',
                                      height = self.CONTROL_FRAME_HEIGHT,
                                      width = self.SolverFrameWidth)
@@ -431,15 +434,18 @@ class Wordy:
         self.curInfoFrame.grid_propagate(False)
 
     def SolverCalculations(self):
-        wordValues = self.Solver.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.DL04)
-        print(wordValues)
+        wordValues = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
+        #print(wordValues)
         if len(wordValues) > 10:
             N = 10
-            out = dict(list(wordValues.items())[0 :N])
-            print("Top 10 Recommendations are:\n", out)
+            self.top10Recs = dict(list(wordValues.items())[0 :N])
+            print("Top 10 Recommendations are:\n", self.top10Recs)
         else:
+            self.top10Recs = dict(list(wordValues.items())[0 : len(wordValues)])
             print("Top Recommendations are:\n", wordValues)
-       
+        
+        self.solverDisplay()
+
     def messageScreen(self):
         # Message Frame
         self.messageString = tk.StringVar()
@@ -519,7 +525,7 @@ class Wordy:
         # Put a start button in the bottom frame
         self.startBTN = tk.StringVar()
         self.startBTN.set("Start Game")
-        start_button  = tk.Button(self.button, height = 3, width = 10, textvariable = self.startBTN, command = self.start)
+        start_button  = tk.Button(self.button, height = 3, width = 10, textvariable = self.startBTN, command = self.play)
         start_button.grid(row = 1, column=1)
 
         # Put a quit button in the bottom frame
@@ -542,6 +548,7 @@ class Wordy:
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
+        #self.TopRecsWords = tk.StringVar()
 
         self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
         self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
@@ -567,6 +574,18 @@ class Wordy:
                 self.posWords.grid(row = 3, column = 1)
                 self.curEnt.grid(row = 4, column = 1)
                 self.curRecommendations.grid(row = 5, column = 1, ipady = 10)
+                r = 6
+                for key, value in self.top10Recs.items():
+                    #self.TopRecsWords.sgridself.reet(key + "               0                 " + str(round(value, 5)))
+                    self.TopRecsWords = key
+                    self.TopRecsProbs = str(round(value,5))
+                    self.Recomendation = tk.Message(self.curInfoFrame, text = key + "              1.0000          " + 
+                                                    str(round(value, 5)), anchor = "w",
+                                                    font = self.Header, width = 190)
+                    self.Recomendation.grid(row = r, column = 1, pady = 5)
+                    r += 1
+
+                    
 
     #Handlers For Buttons and messages
     def mustBeWord(self):
@@ -577,11 +596,12 @@ class Wordy:
             else:
                 self.guess_type.deselect()
 
-    def start(self):
+    def play(self):
         """Checks if game has been started if not look and see if it is in an exept condition else display message"""
         if(self.restartGame):
             self.window.destroy()
             Wordy()
+
         if(len(self.curGuess) == 0):
             self.display_answer()
             if(self.gamestarted == False):
@@ -616,6 +636,15 @@ class Wordy:
             self.gamestarted = True
             self.pick_word()
         
+        wordValues = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
+        if len(wordValues) > 10:
+            N = 10
+            self.top10Recs = dict(list(wordValues.items())[0 :N])
+            print("Top 10 Recommendations are:\n", self.top10Recs)
+        else:
+            self.top10Recs = dict(list(wordValues.items())[0 : len(wordValues)])
+            print("Top Recommendations are:\n", wordValues)
+
     def pick_word(self):
         """randomly selcts a word from list"""
         self.answer = str.upper(random.choice(self.shortwrd))

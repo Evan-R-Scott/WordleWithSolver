@@ -1,3 +1,4 @@
+"""                RUN ME FOR Graphs of the Dataset Dictionaries             """
 #This file contains the contents for creating the bar graph/plot which display the 
 #range of probabilities for visual display of the Letter Frequency dictionary 
 #and Letter in Specific Locations dictionary 
@@ -7,11 +8,11 @@
 #import statements
 import matplotlib.pyplot as plt
 import pandas as pd
-import DataProbabilityCalculation
+import DatasetDictionaryInitialization
 
 #import dictionaries from DataProbabiityCalculation.py file
-dictLWFreq =  DataProbabilityCalculation.dictLWFreq
-dictLetterFreq = DataProbabilityCalculation.dictLetterFreq
+dictLWFreq =  DatasetDictionaryInitialization.dictLWFreq
+dictLetterFreq = DatasetDictionaryInitialization.dictLetterFreq
 
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']

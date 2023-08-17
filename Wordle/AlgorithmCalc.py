@@ -13,7 +13,7 @@ class Solver:
 
     #calculate the "value" of each word out of the remaining words 
     #based on the current information
-    def WordValueCalc(self, curTotalList, curPossList, DL04):
+    def WordValueCalc(self, curTotalList, curPossList, dictLWFreq, DL04):
         getcontext().prec = 30
         wordValues = {}
         for word in curTotalList:
@@ -27,7 +27,9 @@ class Solver:
             for i in range(len(word)):
                 if word[i] not in checkDuplicates:
                     checkDuplicates.append(word[i])
-                    wordValues[curWord] += (Decimal(self.letterWeights[word[i].upper()]) * Decimal(DL04[i][word[i].upper()]))
+                    wordValues[curWord] += (Decimal(self.letterWeights[word[i].upper()])
+                                            * Decimal(DL04[i][word[i].upper()]))
+                                            #* Decimal(dictLWFreq[word[i].upper()][i]))
             wordValues[curWord] = float(str(round(wordValues[curWord], 4)))
 
         for word in curTotalList:
@@ -39,5 +41,5 @@ class Solver:
 
         sortedWordValues = dict(sorted(wordValues.items(), key = lambda x: x[1], reverse = True))
 
-        #return dictionary that has all the words and their values
+        #return dictionary that has all the words and their values sorted from largest to smallest
         return sortedWordValues
