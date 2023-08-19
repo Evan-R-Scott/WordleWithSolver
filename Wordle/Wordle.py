@@ -35,7 +35,6 @@ class Wordy:
         self.guessFrames()          #Builds the frame for guesses
         self.keyScreen()            #Builds the keyboard frame
         self.keybuttons()           #builds the keys/functionality
-        self.SolverFrame()           #Builds the solver frame
         self.messageScreen()        #Presents messages to the user
         self.parameterScreen()      #The Parameter Screen
         self.buttonFrame()           #Houses start and quit button    
@@ -60,13 +59,37 @@ class Wordy:
         self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt"
         self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/short_wordlist.txt"
 
+        getcontext().prec = 30
+
         #Initialize the list containing 5 dictionaries for each specific spot with letters and probabilities
-        #that get removed and renormalised based on guess making letters green/gray/yellow
-        self.DL04 =  []
-        for _ in range(5):
-            self.DL04.append(DatasetDictionaryInitialization.dictLetterFreq)
+        #that get removed and renormalised based on a guess making letters green/gray/yellow
         self.totalLettersdictLWFreq = DatasetDictionaryInitialization.totalLettersdictLWFreq
         self.dictLWFreq = DatasetDictionaryInitialization.dictLWFreq
+
+        self.DL04 =  []
+        for _ in range(5):
+            self.DL04.append(self.totalLettersdictLWFreq)
+        print(self.DL04)
+
+        curSpot = 0
+        for dictionary in self.DL04:
+            for key in dictionary:
+                if key == "Z":
+                    print(key)
+                    print(dictionary[key])
+                    print(self.dictLWFreq[key][curSpot])
+                dictionary[key] = dictionary[key] * self.dictLWFreq[key][curSpot]
+                if key == "Z":
+                    print(dictionary[key])
+            curSpot += 1
+
+        for dictionary in self.DL04:
+            totalSum =  sum(dictionary.values())
+            for key in dictionary:
+                dictionary[key] = round((Decimal(dictionary[key]) / Decimal(totalSum)), 6)
+            print(sum(dictionary.values()))
+        
+        print(self.DL04)
 
         #create instance of Solver Calculations class
         self.SolverClass = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
@@ -108,14 +131,21 @@ class Wordy:
 
         #Solver variables
         self.FontHeader = 8
+        self.KeyFont = 7
         self.FontRecommendations = 4
+        self.KeyText = (self.FONT_FAMILY, self.KeyFont)
         self.Header = (self.FONT_FAMILY, self.FontHeader)
-        self.HeaderBig = (self.FONT_FAMILY, self.FontHeader, 'bold')
+        self.HeaderBig = (self.FONT_FAMILY, self.FontHeader, 'bold', 'underline')
         self.Title = "Solver"
-        self.totalWordsRemaining = "Total Pool of Words Remaining:"
+        self.totalWordsRemaining = "Total Guessable Words Remaining:"
         self.currentEntropy = "Current Entropy/Uncertainty:"
-        self.possibleOutcomeText = "Potential Answers Remaining:"
-        self.RecommendationHeader = "Top Picks    ||   E[Info]   ||   P(word)"
+        self.possibleOutcomeText = "Potential Solution Words Remaining:"
+        self.RecommendationHeader = "Top Picks    ||   E[Info]   ||   P(Word)"
+        self.Key = "Key Info"
+        self.Key1 = "*** : Word is a possible solution. It is in the solution word list Wordle chooses from."
+        self.Key1Extra = "No (***) : Word is a guessable word, but not a possible solution. It provides value due its letter combination and placement."
+        self.Key2 = "E[Info] : Expected remaining entropy value post word guess. Calculations based on common case scenario with all gray letters as result. Actual results will vary."
+        self.Key3 = "P(Word) : Value of a word based on its letter composition within set of remaining words on a 0 to 1 probability range."
         self.SolverFrameWidth = 200
 
         self.restartGame = False
@@ -139,7 +169,7 @@ class Wordy:
             ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACK"]]
         
         # Parameters for the control frame
-        self.CONTROL_FRAME_HEIGHT = self.PARENT_GUESS_FRAME_HEIGHT + self.KEYBOARD_FRAME_HEIGHT
+        self.CONTROL_FRAME_HEIGHT = 600
         self.CONTROL_FRAME_WIDTH = 300
         self.USER_SELECTION_PADDING = 10  
 
@@ -185,8 +215,8 @@ class Wordy:
         # Solver Frame
         self.solver_frame = tk.Frame(self.window, 
             borderwidth = 1, relief = 'solid',
-            height = self.PARENT_GUESS_FRAME_HEIGHT, width = self.SolverFrameWidth)
-        self.solver_frame.grid(row = 1, column = 1)
+            height = self.CONTROL_FRAME_HEIGHT, width = self.SolverFrameWidth)
+        self.solver_frame.grid(row = 1, column = 1, rowspan = 2)
         self.solver_frame.grid_propagate(False)
 
     def gameScreen(self):
@@ -420,19 +450,10 @@ class Wordy:
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
 
         self.renormalization()
-    
-    def SolverFrame(self):
-        """Solver Frame"""
-        self.curInfoFrame = tk.Frame(self.solver_frame, borderwidth = 1, relief = 'solid',
-                                     height = self.CONTROL_FRAME_HEIGHT,
-                                     width = self.SolverFrameWidth)
-        self.curInfoFrame.grid(row = 1, column = 1)
-        self.curInfoFrame.grid_propagate(False)
 
     def SolverCalculations(self):
         """Probability and Entropy calculations top recommendations handler"""
         wordValues = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
-        #print(wordValues)
         if len(wordValues) > 10:
             N = 10
             self.top10Recs = dict(list(wordValues.items())[0 :N])
@@ -553,34 +574,49 @@ class Wordy:
         self.curEntRem.set(self.currentEntropy + "\n" +str(self.curEntropyVal))
         if(self.gamestarted == True):
             if self.solver_bool.get() == True:
-                self.solverTitle = tk.Message(self.curInfoFrame,text = self.Title, 
+                self.solverTitle = tk.Message(self.solver_frame,text = self.Title, 
                                                     font = self.HeaderBig, justify = "center",
                                                     width = 180)
-                self.wordsRemaining = tk.Message(self.curInfoFrame,textvariable= self.wordsRem, 
+                self.wordsRemaining = tk.Message(self.solver_frame,textvariable= self.wordsRem, 
                                                     font = self.Header,justify = "center",
                                                     width = 180)
-                self.curEnt = tk.Message(self.curInfoFrame,textvariable= self.curEntRem, 
+                self.curEnt = tk.Message(self.solver_frame,textvariable= self.curEntRem, 
                                                     font = self.Header, justify = "center",
                                                     width = 180)
-                self.posWords = tk.Message(self.curInfoFrame,textvariable= self.possWordsRem, 
+                self.posWords = tk.Message(self.solver_frame,textvariable= self.possWordsRem, 
                                                     font = self.Header, justify = "center",
                                                     width = 180)
-                self.curRecommendations = tk.Message(self.curInfoFrame, text = self.RecommendationHeader,
+                self.curRecommendations = tk.Message(self.solver_frame, text = self.RecommendationHeader,
                                                      font = self.HeaderBig, width = 190)
+                self.keyy = tk.Message(self.solver_frame, text = self.Key,
+                                                     font = self.HeaderBig, width = 190)
+                self.keyy1 = tk.Message(self.solver_frame, text = self.Key1,
+                                                     font = self.KeyText, width = 190)
+                self.keyy1Extra = tk.Message(self.solver_frame, text = self.Key1Extra,
+                                                     font = self.KeyText, width = 190)
+                self.keyy2 = tk.Message(self.solver_frame, text = self.Key2,
+                                                     font = self.KeyText, width = 190)
+                self.keyy3 = tk.Message(self.solver_frame, text = self.Key3,
+                                                     font = self.KeyText, width = 190)
                 self.solverTitle.grid(row =1, column = 1, padx = 5)
                 self.wordsRemaining.grid(row =2, column = 1)
                 self.posWords.grid(row = 3, column = 1)
                 self.curEnt.grid(row = 4, column = 1)
                 self.curRecommendations.grid(row = 5, column = 1, ipady = 10)
+                self.keyy.grid(row = 16, column = 1, pady = 5)
+                self.keyy1.grid(row = 17, column = 1)
+                self.keyy1Extra.grid(row = 18, column = 1)
+                self.keyy2.grid(row = 19, column = 1)
+                self.keyy3.grid(row = 20, column = 1)
                 r = 6
                 for key, value in self.top10Recs.items():
                     #self.TopRecsWords.sgridself.reet(key + "               0                 " + str(round(value, 5)))
                     self.TopRecsWords = key
                     self.TopRecsProbs = str(round(value,5))
-                    self.Recomendation = tk.Message(self.curInfoFrame, text = key + "              1.0000          " + 
+                    self.Recomendation = tk.Message(self.solver_frame, text = key + "              1.0000          " + 
                                                     str(round(value, 5)), anchor = "w",
                                                     font = self.Header, width = 190)
-                    self.Recomendation.grid(row = r, column = 1, pady = 5)
+                    self.Recomendation.grid(row = r, column = 1)
                     r += 1
 
                     

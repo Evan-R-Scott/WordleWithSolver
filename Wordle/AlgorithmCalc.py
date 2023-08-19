@@ -16,6 +16,7 @@ class Solver:
     def WordValueCalc(self, curTotalList, curPossList, dictLWFreq, DL04):
         getcontext().prec = 30
         wordValues = {}
+        print(DL04)
         for word in curTotalList:
             if word in curPossList:
                 curWord = word + "***"
@@ -27,9 +28,9 @@ class Solver:
             for i in range(len(word)):
                 if word[i] not in checkDuplicates:
                     checkDuplicates.append(word[i])
-                    wordValues[curWord] += (Decimal(self.letterWeights[word[i].upper()])
-                                            * Decimal(DL04[i][word[i].upper()]))
-                                            #* Decimal(dictLWFreq[word[i].upper()][i]))
+                    wordValues[curWord] += Decimal(DL04[i][word[i].upper()]) 
+                                            #* Decimal(self.letterWeights[word[i].upper()]))
+            #(Decimal(dictLWFreq[word[i].upper()][i]) *
             wordValues[curWord] = float(str(round(wordValues[curWord], 4)))
 
         for word in curTotalList:
