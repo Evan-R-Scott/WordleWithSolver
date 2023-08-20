@@ -20,6 +20,7 @@ import random
 import tkinter as tk
 import tkinter.font
 import time
+import heapq
 
 from enum import Enum
 from decimal import Decimal, getcontext
@@ -68,28 +69,18 @@ class Wordy:
 
         self.DL04 =  []
         for _ in range(5):
-            self.DL04.append(self.totalLettersdictLWFreq)
-        print(self.DL04)
-
+            new_dict = {key: value for key, value in self.totalLettersdictLWFreq.items()}
+            self.DL04.append(new_dict)
         curSpot = 0
         for dictionary in self.DL04:
             for key in dictionary:
-                if key == "Z":
-                    print(key)
-                    print(dictionary[key])
-                    print(self.dictLWFreq[key][curSpot])
-                dictionary[key] = dictionary[key] * self.dictLWFreq[key][curSpot]
-                if key == "Z":
-                    print(dictionary[key])
+                dictionary[key] = (dictionary[key] * (self.dictLWFreq[key][curSpot]))
             curSpot += 1
 
         for dictionary in self.DL04:
             totalSum =  sum(dictionary.values())
             for key in dictionary:
-                dictionary[key] = round((Decimal(dictionary[key]) / Decimal(totalSum)), 6)
-            print(sum(dictionary.values()))
-        
-        print(self.DL04)
+                dictionary[key] = float(str(Decimal(dictionary[key]) / Decimal(totalSum)))
 
         #create instance of Solver Calculations class
         self.SolverClass = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
@@ -123,7 +114,6 @@ class Wordy:
         self.FONT_FAMILY = 'ariel'          # Font to use for letters in the guess boxes.
         self.FONT_SIZE_GUESS = 35           # Font size for letters in the guess boxes.
 
-        self.curEntropyVal = 0 #initialize entropy value to 0
 
         #Trackers for Green/Yellow/Gray Letters
         self.correctLetters = [0,0,0,0,0]
@@ -351,14 +341,20 @@ class Wordy:
                 totalSum =  sum(Decimal(value) for value in dictionary.values())
                 if len(dictionary) > 1:
                     for key in dictionary:
-                        dictionary[key] = round(Decimal(dictionary[key])/ totalSum, 6)
+                        dictionary[key] = Decimal(dictionary[key])/ totalSum
                 curG += 1
 
             self.TotalWordsCount = len(self.curTotalwrds)
             self.PossibleWordsCount = len(self.curPosswrds)
             self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
             self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
-            self.curEntRem.set(self.currentEntropy + "\n" +str(self.curEntropyVal))
+            self.curEntRem.set(self.currentEntropy + "\n" +str(self.totalEntropy))
+
+            #Clear current recommendations for new recommendations to be displayed in solver frame
+            for recommendation in self.delWidgets:
+                recommendation.destroy()
+
+            #self.curEnt.destroy()
 
             self.SolverCalculations()
 
@@ -453,14 +449,7 @@ class Wordy:
 
     def SolverCalculations(self):
         """Probability and Entropy calculations top recommendations handler"""
-        wordValues = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
-        if len(wordValues) > 10:
-            N = 10
-            self.top10Recs = dict(list(wordValues.items())[0 :N])
-            print("Top 10 Recommendations are:\n", self.top10Recs)
-        else:
-            self.top10Recs = dict(list(wordValues.items())[0 : len(wordValues)])
-            print("Top Recommendations are:\n", wordValues)
+        self.sortedWordValues, self.totalEntropy = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
         
         self.solverDisplay()
 
@@ -567,11 +556,14 @@ class Wordy:
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
-        #self.TopRecsWords = tk.StringVar()
+
+        self.sortedWordValues, self.totalEntropy = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
 
         self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
         self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
-        self.curEntRem.set(self.currentEntropy + "\n" +str(self.curEntropyVal))
+        self.curEntRem.set(self.currentEntropy + "\n" +str(self.totalEntropy))
+        r = 6
+        self.delWidgets = []
         if(self.gamestarted == True):
             if self.solver_bool.get() == True:
                 self.solverTitle = tk.Message(self.solver_frame,text = self.Title, 
@@ -608,18 +600,27 @@ class Wordy:
                 self.keyy1Extra.grid(row = 18, column = 1)
                 self.keyy2.grid(row = 19, column = 1)
                 self.keyy3.grid(row = 20, column = 1)
-                r = 6
-                for key, value in self.top10Recs.items():
-                    #self.TopRecsWords.sgridself.reet(key + "               0                 " + str(round(value, 5)))
-                    self.TopRecsWords = key
-                    self.TopRecsProbs = str(round(value,5))
-                    self.Recomendation = tk.Message(self.solver_frame, text = key + "              1.0000          " + 
-                                                    str(round(value, 5)), anchor = "w",
-                                                    font = self.Header, width = 190)
-                    self.Recomendation.grid(row = r, column = 1)
-                    r += 1
 
-                    
+                if len(self.sortedWordValues) < 10:
+                    n = len(self.sortedWordValues)
+                    topWords =  heapq.nlargest(n, self.sortedWordValues.items(), key=lambda item: item[1])
+                    for key, value in topWords:
+                        self.Recomendation = tk.Message(self.solver_frame, text = key + "              1.0000          " + 
+                                                    str(round(value, 6)), anchor = "w",
+                                                    font = self.Header, width = 190)
+                        self.Recomendation.grid(row = r, column = 1)
+                        self.delWidgets.append(self.Recomendation)
+                        r += 1
+                else:
+                    n = 10
+                    topWords =  heapq.nlargest(n, self.sortedWordValues.items(), key=lambda item: item[1])
+                    for key, value in topWords:
+                        self.Recomendation = tk.Message(self.solver_frame, text = key + "              1.0000          " + 
+                                                    str(round(value, 6)), anchor = "w",
+                                                    font = self.Header, width = 190)
+                        self.Recomendation.grid(row = r, column = 1)
+                        self.delWidgets.append(self.Recomendation)
+                        r += 1
 
     #Handlers For Buttons and messages
     def mustBeWord(self):
@@ -670,14 +671,13 @@ class Wordy:
             self.gamestarted = True
             self.pick_word()
         
-        wordValues = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
-        if len(wordValues) > 10:
-            N = 10
-            self.top10Recs = dict(list(wordValues.items())[0 :N])
-            print("Top 10 Recommendations are:\n", self.top10Recs)
-        else:
-            self.top10Recs = dict(list(wordValues.items())[0 : len(wordValues)])
-            print("Top Recommendations are:\n", wordValues)
+       # if len(wordValues) > 10:
+           # N = 10
+           # self.top10Recs = dict(list(wordValues.items())[0 :N])
+           # print("Top 10 Recommendations are:\n", self.top10Recs)
+       # else:
+            #self.top10Recs = dict(list(wordValues.items())[0 : len(wordValues)])
+           # print("Top Recommendations are:\n", wordValues)
 
     def pick_word(self):
         """randomly selcts a word from list"""
