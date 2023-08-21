@@ -118,24 +118,25 @@ class Wordy:
         #Trackers for Green/Yellow/Gray Letters
         self.correctLetters = [0,0,0,0,0]
         self.tempLocYellow = [[],[],[],[],[]]
+        self.Yellows = []
 
         #Solver variables
         self.FontHeader = 8
+        self.TitleHeader = 7
         self.KeyFont = 7
         self.FontRecommendations = 4
         self.KeyText = (self.FONT_FAMILY, self.KeyFont)
         self.Header = (self.FONT_FAMILY, self.FontHeader)
-        self.HeaderBig = (self.FONT_FAMILY, self.FontHeader, 'bold', 'underline')
+        self.HeaderBig = (self.FONT_FAMILY, self.TitleHeader, 'bold', 'underline')
         self.Title = "Solver"
-        self.totalWordsRemaining = "Total Guessable Words Remaining:"
+        self.totalWordsRemaining = "Guessable Words Remaining:"
         self.currentEntropy = "Current Entropy/Uncertainty:"
         self.possibleOutcomeText = "Potential Solution Words Remaining:"
-        self.RecommendationHeader = "Top Picks    ||   E[Info]   ||   P(Word)"
+        self.RecommendationHeader = "Top Picks || Possible Solution || P(Word)"
         self.Key = "Key Info"
-        self.Key1 = "*** : Word is a possible solution. It is in the solution word list Wordle chooses from."
-        self.Key1Extra = "No (***) : Word is a guessable word, but not a possible solution. It provides value due its letter combination and placement."
-        self.Key2 = "E[Info] : Expected remaining entropy value post word guess. Calculations based on common case scenario with all gray letters as result. Actual results will vary."
-        self.Key3 = "P(Word) : Value of a word based on its letter composition within set of remaining words on a 0 to 1 probability range."
+        self.Key1 = "- TOP PICKS : Of the remaining words, the words within this column are the top recommendations offered by the solver as they offer the most value towards completing the Wordle."
+        self.Key2 = "- POSSIBLE SOLUTION: (Yes) indicates this recommended word is within the Wordle word list and therefore is a potential solution for the Wordle. Abscence of a (Yes) suggests the word is from the list of accepted guessable words but cannot be the Wordle solution."
+        self.Key3 = "- P(WORD) : Probability/Weight of a word's value within the set of remaining guessable words. A word's value is the summation of its letters' normalized probalities."
         self.SolverFrameWidth = 200
 
         self.restartGame = False
@@ -290,17 +291,17 @@ class Wordy:
     def enterHandler(self):
         """Handle what happens when enter is pressed: it is not a word, it is too short, play again,
         it is the right answer or all guesses are used up"""
-        if self.curRow == self.NUM_GUESSES:
-            self.displayEntered()
-            self.gamestarted = False
-            self.messageString.set('Guesses used up. Word was: ' + self.answer + '. Game over.' + '\n\n' + 'Would you like to play again?')
-            self.restartGame = True
-            self.startBTN.set("Play Again")
-        elif self.answer == self.curGuess:
+        if self.answer == self.curGuess:
             time.sleep(self.PROCESS_GUESS_WAITTIME)
             self.displayEntered()
             self.gamestarted = False
             self.messageString.set('Correct. Nice job. Game over' + '\n\n' + 'Would you like to play again?')
+            self.restartGame = True
+            self.startBTN.set("Play Again")
+        elif self.curRow == self.NUM_GUESSES:
+            self.displayEntered()
+            self.gamestarted = False
+            self.messageString.set('Guesses used up. Word was: ' + self.answer + '. Game over.' + '\n\n' + 'Would you like to play again?')
             self.restartGame = True
             self.startBTN.set("Play Again")
         elif(self.curRow <= self.NUM_GUESSES and self.gamestarted == True):
@@ -330,6 +331,7 @@ class Wordy:
             """Normalization of probabilities based on gray/yellow letters from guessed word"""
             getcontext().prec = 30
             curG = 0
+
             for dictionary in self.DL04:
                 for i in range(len(self.curTotalwrds) - 1, -1, -1):
                     if self.curTotalwrds[i][curG].upper() not in dictionary.keys():
@@ -343,6 +345,7 @@ class Wordy:
                     for key in dictionary:
                         dictionary[key] = Decimal(dictionary[key])/ totalSum
                 curG += 1
+                        
 
             self.TotalWordsCount = len(self.curTotalwrds)
             self.PossibleWordsCount = len(self.curPosswrds)
@@ -353,8 +356,6 @@ class Wordy:
             #Clear current recommendations for new recommendations to be displayed in solver frame
             for recommendation in self.delWidgets:
                 recommendation.destroy()
-
-            #self.curEnt.destroy()
 
             self.SolverCalculations()
 
@@ -411,6 +412,8 @@ class Wordy:
                 for t in range(len(self.curGuess)):
                     #if num > 0:
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] in answerDic.keys():
+                            if self.curGuess[t] not in self.Yellows:
+                                self.Yellows.append(self.curGuess[t])
                             #Handle yellow letter removal from only the current dictionary
                             if (self.curGuess[t] not in self.tempLocYellow[t] and (len(self.DL04[t]) > 1)):
                                     self.tempLocYellow[t].append(self.curGuess[t])
@@ -579,12 +582,10 @@ class Wordy:
                                                     font = self.Header, justify = "center",
                                                     width = 180)
                 self.curRecommendations = tk.Message(self.solver_frame, text = self.RecommendationHeader,
-                                                     font = self.HeaderBig, width = 190)
+                                                     font = self.HeaderBig, width = 195)
                 self.keyy = tk.Message(self.solver_frame, text = self.Key,
                                                      font = self.HeaderBig, width = 190)
                 self.keyy1 = tk.Message(self.solver_frame, text = self.Key1,
-                                                     font = self.KeyText, width = 190)
-                self.keyy1Extra = tk.Message(self.solver_frame, text = self.Key1Extra,
                                                      font = self.KeyText, width = 190)
                 self.keyy2 = tk.Message(self.solver_frame, text = self.Key2,
                                                      font = self.KeyText, width = 190)
@@ -597,30 +598,25 @@ class Wordy:
                 self.curRecommendations.grid(row = 5, column = 1, ipady = 10)
                 self.keyy.grid(row = 16, column = 1, pady = 5)
                 self.keyy1.grid(row = 17, column = 1)
-                self.keyy1Extra.grid(row = 18, column = 1)
                 self.keyy2.grid(row = 19, column = 1)
                 self.keyy3.grid(row = 20, column = 1)
 
                 if len(self.sortedWordValues) < 10:
                     n = len(self.sortedWordValues)
-                    topWords =  heapq.nlargest(n, self.sortedWordValues.items(), key=lambda item: item[1])
-                    for key, value in topWords:
-                        self.Recomendation = tk.Message(self.solver_frame, text = key + "              1.0000          " + 
-                                                    str(round(value, 6)), anchor = "w",
-                                                    font = self.Header, width = 190)
-                        self.Recomendation.grid(row = r, column = 1)
-                        self.delWidgets.append(self.Recomendation)
-                        r += 1
                 else:
                     n = 10
-                    topWords =  heapq.nlargest(n, self.sortedWordValues.items(), key=lambda item: item[1])
-                    for key, value in topWords:
-                        self.Recomendation = tk.Message(self.solver_frame, text = key + "              1.0000          " + 
-                                                    str(round(value, 6)), anchor = "w",
-                                                    font = self.Header, width = 190)
-                        self.Recomendation.grid(row = r, column = 1)
-                        self.delWidgets.append(self.Recomendation)
-                        r += 1
+                topWords =  heapq.nlargest(n, self.sortedWordValues.items(), key=lambda item: item[1])
+                for key, value in topWords:
+                    if key in self.curPosswrds:
+                        isPossSolution = 'Yes'
+                    else: 
+                        isPossSolution = '        '
+                    self.Recomendation = tk.Message(self.solver_frame, text = key + "                " + isPossSolution +"          " + 
+                                                    str(round(value, 6)),
+                                                    font = self.Header, width = 195)
+                    self.Recomendation.grid(row = r, column = 1, sticky = 'e', padx = 5)
+                    self.delWidgets.append(self.Recomendation)
+                    r += 1
 
     #Handlers For Buttons and messages
     def mustBeWord(self):
@@ -670,14 +666,6 @@ class Wordy:
         else:
             self.gamestarted = True
             self.pick_word()
-        
-       # if len(wordValues) > 10:
-           # N = 10
-           # self.top10Recs = dict(list(wordValues.items())[0 :N])
-           # print("Top 10 Recommendations are:\n", self.top10Recs)
-       # else:
-            #self.top10Recs = dict(list(wordValues.items())[0 : len(wordValues)])
-           # print("Top Recommendations are:\n", wordValues)
 
     def pick_word(self):
         """randomly selcts a word from list"""

@@ -22,45 +22,34 @@ class Solver:
         totalSum = 0
         ShortSum = 0
         for word in curTotalList:
-            if word in curPossList:
-                curWord = word + "***"
-                wordValues[word + "***"] = 0
-            else:
-                curWord = word
-                wordValues[word] = 0
+            wordValues[word] = 0
             checkDuplicates = []
+            if word in curPossList:
+                wordShortValues[word] = 0
+                checkShortDuplicates = []
             for i in range(len(word)):
                 if word[i] not in checkDuplicates:
                     checkDuplicates.append(word[i])
                     totalSum += (Decimal(DL04[i][word[i].upper()])
                                  * (Decimal(self.letterWeights[word[i].upper()])))
-            wordValues[curWord] = totalSum
-            totalSum = 0
-
-        Sum = sum(wordValues.values())
-        for word in curTotalList:
-            if word in curPossList:
-                curWord = word + "***"
-            else:
-                curWord = word
-            wordValues[curWord] = wordValues[curWord] / (Sum)
-        #optimize the 2 code below into the code above by adding it to within the if word in cur poss list
-        for word in curPossList:
-            wordShortValues[word] = 0
-            checkShortDuplicates = []
-            for i in range(len(word)):
-                if word[i] not in checkShortDuplicates:
+                if word in curPossList and word[i] not in checkShortDuplicates:
                     checkShortDuplicates.append(word[i])
                     ShortSum += (Decimal(DL04[i][word[i].upper()])
                                  * (Decimal(self.letterWeights[word[i].upper()])))
-            wordShortValues[word] = ShortSum
-            ShortSum = 0
-        
-        ShortTotalSum = sum(wordShortValues.values())
-        for word in curPossList:
-            wordShortValues[word] = wordShortValues[word] / (ShortTotalSum)
+            wordValues[word] = totalSum
+            totalSum = 0
+            if word in curPossList:
+                wordShortValues[word] = ShortSum
+                ShortSum = 0
 
-        #calculate current total entropy remaining for remaining possible solution words
+        Sum = sum(wordValues.values())
+        ShortTotalSum = sum(wordShortValues.values())
+        for word in curTotalList:
+            wordValues[word] = wordValues[word] / (Sum)
+            if word in curPossList:
+                wordShortValues[word] = wordShortValues[word] / (ShortTotalSum)
+
+        #calculate current total entropy for the remaining possible solution words
         totalEntropy = round(-sum(float(str(value)) * math.log2(value) for value in wordShortValues.values()), 5)
         if totalEntropy == -0.0:
             totalEntropy = 0.0
