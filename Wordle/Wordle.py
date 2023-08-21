@@ -18,7 +18,6 @@ import AlgorithmCalc
 
 import random
 import tkinter as tk
-import tkinter.font
 import time
 import heapq
 
@@ -68,19 +67,14 @@ class Wordy:
         self.dictLWFreq = DatasetDictionaryInitialization.dictLWFreq
 
         self.DL04 =  []
-        for _ in range(5):
+        for i in range(5):
             new_dict = {key: value for key, value in self.totalLettersdictLWFreq.items()}
             self.DL04.append(new_dict)
-        curSpot = 0
-        for dictionary in self.DL04:
-            for key in dictionary:
-                dictionary[key] = (dictionary[key] * (self.dictLWFreq[key][curSpot]))
-            curSpot += 1
-
-        for dictionary in self.DL04:
-            totalSum =  sum(dictionary.values())
-            for key in dictionary:
-                dictionary[key] = float(str(Decimal(dictionary[key]) / Decimal(totalSum)))
+            for key in self.DL04[i]:
+                self.DL04[i][key] = (self.DL04[i][key] * (self.dictLWFreq[key][i]))
+            totalSum =  sum(self.DL04[i].values())
+            for key in self.DL04[i]:
+                self.DL04[i][key] = float(str(Decimal(self.DL04[i][key]) / Decimal(totalSum)))
 
         #create instance of Solver Calculations class
         self.SolverClass = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
@@ -122,12 +116,11 @@ class Wordy:
 
         #Solver variables
         self.FontHeader = 8
-        self.TitleHeader = 7
         self.KeyFont = 7
         self.FontRecommendations = 4
         self.KeyText = (self.FONT_FAMILY, self.KeyFont)
         self.Header = (self.FONT_FAMILY, self.FontHeader)
-        self.HeaderBig = (self.FONT_FAMILY, self.TitleHeader, 'bold', 'underline')
+        self.HeaderBig = (self.FONT_FAMILY, self.KeyFont, 'bold', 'underline')
         self.Title = "Solver"
         self.totalWordsRemaining = "Guessable Words Remaining:"
         self.currentEntropy = "Current Entropy/Uncertainty:"
@@ -135,19 +128,17 @@ class Wordy:
         self.RecommendationHeader = "Top Picks || Possible Solution || P(Word)"
         self.Key = "Key Info"
         self.Key1 = "- TOP PICKS : Of the remaining words, the words within this column are the top recommendations offered by the solver as they offer the most value towards completing the Wordle."
-        self.Key2 = "- POSSIBLE SOLUTION: (Yes) indicates this recommended word is within the Wordle word list and therefore is a potential solution for the Wordle. Abscence of a (Yes) suggests the word is from the list of accepted guessable words but cannot be the Wordle solution."
+        self.Key2 = "- POSSIBLE SOLUTION: (Yes) indicates this recommended word is within the Wordle word list and therefore is a potential solution for the Wordle. Absence of a (Yes) suggests the word is from the list of accepted guessable words but cannot be the Wordle solution."
         self.Key3 = "- P(WORD) : Probability/Weight of a word's value within the set of remaining guessable words. A word's value is the summation of its letters' normalized probalities."
         self.SolverFrameWidth = 200
 
         self.restartGame = False
-
 
         # Parameters for the keyboard frame
         self.KEYBOARD_FRAME_HEIGHT = 200
         self.KEYBOARD_BUTTON_HEIGHT = 2
         self.KEYBOARD_BUTTON_WIDTH = 3  # width of the letter buttons.
         self.KEYBOARD_BUTTON_WIDTH_LONG = 5 # width of the enter and back buttons.
-
 
         self.KEYBOARD_BUTTON_TEXT_BEGIN = 'black' 
         self.KEYBOARD_BUTTON_TEXT_WRONG = 'grey'  
@@ -162,10 +153,8 @@ class Wordy:
         # Parameters for the control frame
         self.CONTROL_FRAME_HEIGHT = 600
         self.CONTROL_FRAME_WIDTH = 300
-        self.USER_SELECTION_PADDING = 10  
-
+        self.USER_SELECTION_PADDING = 10 
         self.MESSAGE_DISPLAY_TIME_SECS = 5
-        
         self.PROCESS_GUESS_WAITTIME = 1  
     
     def makeWrdLst(self):
@@ -259,8 +248,7 @@ class Wordy:
                 
                 button.grid(row = r + 1, column = c + 1, padx = 10 )
                 self.buttons[self.KEYBOARD_BUTTON_NAMES[r][c]] = button
-                
-                    
+                          
         self.buttons['ENTER']['width'] = self.KEYBOARD_BUTTON_WIDTH_LONG
         self.buttons['BACK']['width'] = self.KEYBOARD_BUTTON_WIDTH_LONG
         self.buttons['ENTER']['command'] = self.enterHandler
@@ -281,6 +269,7 @@ class Wordy:
             let.grid(row= self.curRow, column= self.curColumn)
             self.curColumn += 1
             self.curGuess += text
+
     def backHandler(self):
         """If back is pressed erases the current letter"""
         if(self.curColumn > 1 and self.gamestarted == True):
@@ -288,6 +277,7 @@ class Wordy:
             let = tk.Message(self.game_frame, text= ' ', font=self.FONT_FAMILY, aspect= self.FONT_SIZE_GUESS, bg = 'white')
             let.grid(row= self.curRow, column= self.curColumn)
             self.curGuess = self.curGuess[0:-1]
+
     def enterHandler(self):
         """Handle what happens when enter is pressed: it is not a word, it is too short, play again,
         it is the right answer or all guesses are used up"""
@@ -324,11 +314,9 @@ class Wordy:
                 self.messageString.set('Word is not long enough')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
 
-    #updates the total word count and possible word count
-    #renormalizes the probabilities of letters in the 5 dictionaries because 
-    # letters got removed from previous guess
     def renormalization(self):
-            """Normalization of probabilities based on gray/yellow letters from guessed word"""
+            """Updates lists for solver algorithm and normalization of probabilities based on 
+            gray/yellow letters from previously guessed word"""
             getcontext().prec = 30
             curG = 0
 
@@ -339,13 +327,15 @@ class Wordy:
                 for i in range(len(self.curPosswrds) - 1, -1, -1):
                     if self.curPosswrds[i][curG].upper() not in dictionary.keys():
                         del self.curPosswrds[i]
-
                 totalSum =  sum(Decimal(value) for value in dictionary.values())
                 if len(dictionary) > 1:
                     for key in dictionary:
                         dictionary[key] = Decimal(dictionary[key])/ totalSum
                 curG += 1
-                        
+
+            if len(self.Yellows) > 0:
+                self.curTotalwrds = [word for word in self.curTotalwrds if all(letter.lower() in word for letter in self.Yellows)]
+                self.curPosswrds = [word for word in self.curPosswrds if all(letter.lower() in word for letter in self.Yellows)]       
 
             self.TotalWordsCount = len(self.curTotalwrds)
             self.PossibleWordsCount = len(self.curPosswrds)
@@ -499,7 +489,7 @@ class Wordy:
                             var = self.show_word_bool, command= self.display_answer)
         self.show_word.grid(row = 2, column = 1, sticky = tk.W, pady = self.GUESS_FRAME_PADDING)
 
-        #display word
+        #Display word
         self.displayWordString = tk.StringVar()
         self.displayWord = tk.Message(self.parameter, textvariable= self.displayWordString, width= self.CONTROL_FRAME_WIDTH//2)
         self.displayWord.grid(row= 2, column= 2)
@@ -509,17 +499,17 @@ class Wordy:
                             var = self.solver_bool, command = self.solverDisplay, state = self.runChecks)
         self.solver.grid(row = 4, column = 1, sticky = tk.W, pady = self.GUESS_FRAME_PADDING)
 
-        #specify Word
+        #Specify Word
         self.specify_word = tk.Checkbutton(self.parameter, text="Specify word", 
                             var = self.specify_word_bool, state= self.runChecks)
         self.specify_word.grid(row = 3, column = 1, sticky = tk.W, pady = self.GUESS_FRAME_PADDING)
 
-        #entry
+        #Entry
         self.entry_var = tk.StringVar()
         self.entry  = tk.Entry(self.parameter, textvariable=self.entry_var, width = self.WORD_SIZE, state=self.runChecks)
         self.entry.grid(row = 3, column=2, padx = self.GUESS_FRAME_PADDING)
 
-        #center check boxes
+        #Center check boxes
         self.parameter.grid_rowconfigure(0, weight= 1)
         self.parameter.grid_rowconfigure(4, weight= 1)
         self.parameter.grid_columnconfigure(0, weight= 1)
