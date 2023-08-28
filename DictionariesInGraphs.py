@@ -1,9 +1,4 @@
-"""                RUN ME FOR Graphs of the Dataset Dictionaries             """
-#This file contains the contents for creating the bar graph/plot which display the 
-#range of probabilities for visual display of the Letter Frequency dictionary 
-#and Letter in Specific Locations dictionary 
-
-#Utilizes pandas and matplotlib
+"""                RUN ME FOR Graphs of the initial dictionaries  of datasets            """
 
 #import statements
 import matplotlib.pyplot as plt
@@ -16,6 +11,7 @@ dictLetterFreq = DatasetDictionaryInitialization.dictLetterFreq
 
 
 """Graph of General Letter Frequencies"""
+
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
@@ -31,6 +27,7 @@ ax.set_ylabel('Probability')
 plt.show()
 
 """Graph of Letters in Specific Locations Frequencies"""
+
 y_valuesLInW = list(dictLWFreq.values())
 
 tempIndex2 = ['A', 'B', 'C', 'D','E','F','G','H','I','J','K','L','M','N','O',

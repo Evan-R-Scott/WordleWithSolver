@@ -1,20 +1,4 @@
 """                      RUN ME FOR Initial Dataset Dictionaries            """
-#This program scales the 2 data set: LetterFrequency.txt and Long_wordlist.txt down to a 0 to
-# 1 range >>> explanation below 
-
-#Long_wordlist.txt - initalize dictionary ({key: [letter 1, letter 2, ... letter 5]}) for
-#the tracking of occurrences for 
-# specific letters in specific spots of the five letter words 
-#divide by the total occurrences of that letter in the list so each probability
-#for each letter in different spots sums to 1 for proportionality across data set scaling
-#Example: {A: [], B: []} which will become {A: [40, 32, 19, 24, 3], B: [13, 46, 92, 8, 29]}
-#and finally(assuming probability of a letter being in each spot is equal) 
-# {A: [0.2, 0.2, 0.2, 0.2, 0.2], B: [0.2, 0.2, 0.2, 0.2, 0.2]}
-
-#LetterFrequency (simpler) - initialize dictionary ({key: frequency weight value of letter occurring})
-# and divide those experiment-calculated values by 100 to get the summation of all 
-# probabilities  for all letters to be 1 for proportionality across data set scaling
-#Example: {A: 0.24, B: 0.06, C: 0.19}
 
 #import statements
 import csv
