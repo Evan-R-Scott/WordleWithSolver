@@ -24,8 +24,8 @@ class DataProbCalc:
         pass
 
 #open files to be read
-f = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt", "r")
-d = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/LetterFrequency.txt", "r")
+f = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/long_wordlist.txt", "r")
+d = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/LetterFrequency.txt", "r")
 csv_reader = csv.reader(d, delimiter = ',')
 
 #create dictionaries

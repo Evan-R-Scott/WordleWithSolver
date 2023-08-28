@@ -3,6 +3,7 @@
 #import statements
 from decimal import Decimal, getcontext
 import math 
+import numpy as np
 
 class Solver:
 
@@ -55,7 +56,7 @@ class Solver:
                 wordShortValues[word] = wordShortValues[word] / (ShortTotalSum)
 
         #Calculate current total entropy for the remaining possible solution words
-        totalEntropy = round(-sum(float(str(value)) * math.log2(value) for value in wordShortValues.values()), 5)
+        totalEntropy = round(-np.sum(np.float64(float(value)) * np.log2(float(value)) for value in wordShortValues.values()), 5)
         if totalEntropy == -0.0:
             totalEntropy = 0.0
 

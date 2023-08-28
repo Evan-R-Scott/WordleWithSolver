@@ -1,4 +1,17 @@
 """                               RUN ME FOR WORDLE              """
+"""
+Made By Evan Scott
+Description: Wordle imitation program that is fully functional
+and incorporates an optional solving algorithm which adapts based on guesses entered
+to recommend the most optimal/value-driven guesses based on a number of factors.
+Concepts/Factors incorporated: 
+- Information Theory
+- Entropy (the minization of uncertainty in as short of steps as possible)
+- Tested data sets - (such as) frequency of letters in the english language and 
+location of these said letters in a 5 letter word
+- Renormalization
+
+"""
 #import statements
 import DatasetDictionaryInitialization
 import AlgorithmCalc
@@ -7,9 +20,8 @@ import random
 import tkinter as tk
 import time
 import heapq
-
-from enum import Enum
 from decimal import Decimal, getcontext
+
 class Wordy:
     #constructor
     def __init__(self):
@@ -43,8 +55,8 @@ class Wordy:
         self.NUM_GUESSES = 6 # number of guesses that the user gets 
 
         #Files to be opened and read
-        self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/long_wordlist.txt"
-        self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Wordle/short_wordlist.txt"
+        self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/long_wordlist.txt"
+        self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/short_wordlist.txt"
 
         getcontext().prec = 30
 
