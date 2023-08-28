@@ -14,28 +14,34 @@ import DatasetDictionaryInitialization
 dictLWFreq =  DatasetDictionaryInitialization.dictLWFreq
 dictLetterFreq = DatasetDictionaryInitialization.dictLetterFreq
 
+
+"""Graph of General Letter Frequencies"""
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
           '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 
-#graph Letter Frequencies probabilities
-x_valuesL = list(dictLetterFreq.keys())
-y_valuesL = list(dictLetterFreq.values())
+DataFrame = pd.DataFrame(list(dictLetterFreq.items()), columns=['Letters', 'Probability'])
 
-plt.bar(x_valuesL, y_valuesL, color = colors, width = 0.4)
-plt.title('Letter Frequencies in English words')
-plt.xlabel('Letters')
-plt.ylabel('Probability')
+ax = DataFrame.plot(kind='bar', x='Letters', y='Probability', color=colors, width=0.4, legend=False)
 
-#graph Letters in Specific Locations probabilities
+ax.set_title('Letter Frequencies in English words')
+ax.set_xlabel('Letters')
+ax.set_ylabel('Probability')
+
+# Display chart
+plt.show()
+
+"""Graph of Letters in Specific Locations Frequencies"""
 y_valuesLInW = list(dictLWFreq.values())
 
 tempIndex2 = ['A', 'B', 'C', 'D','E','F','G','H','I','J','K','L','M','N','O',
              'P','Q','R','S','T','U','V','W','X','Y','Z']
+
 plotData = pd.DataFrame(y_valuesLInW, index = tempIndex2)
-plotData.plot(kind = "bar", figsize = (8,6))
-plt.title("Letter Occurrences in Specific Locations")
-plt.xlabel("Letters")
-plt.ylabel("Probability")
+bx = plotData.plot(kind = "bar", figsize = (8,6))
 
+bx.set_title("Letter Occurrences in Specific Locations")
+bx.set_xlabel("Letters")
+bx.set_ylabel("Probability")
 
+# Display chart
 plt.show()
