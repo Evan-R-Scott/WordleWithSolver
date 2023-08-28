@@ -313,7 +313,7 @@ class Wordy:
             else: #Word is not long enough
                 self.messageString.set('Word is not long enough')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
-
+   
     def renormalization(self):
             """Updates lists for solver algorithm and normalization of probabilities based on 
             gray/yellow letters from previously guessed word"""
@@ -348,7 +348,7 @@ class Wordy:
                 recommendation.destroy()
 
             self.SolverCalculations()
-
+   
     def displayEntered(self):
         """
         Letter handler for transitioning between gray/yellow/green both in display and solver algorithm
@@ -400,7 +400,6 @@ class Wordy:
                 else:
                     num = guessDic[i]
                 for t in range(len(self.curGuess)):
-                    #if num > 0:
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] in answerDic.keys():
                             if self.curGuess[t] not in self.Yellows:
                                 self.Yellows.append(self.curGuess[t])
@@ -439,7 +438,7 @@ class Wordy:
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
 
         self.renormalization()
-
+    
     def SolverCalculations(self):
         """Probability and Entropy calculations top recommendations handler"""
         self.sortedWordValues, self.totalEntropy = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
@@ -543,7 +542,7 @@ class Wordy:
         self.button.grid_columnconfigure(4, weight = 50)
         
         self.window.mainloop()
-
+    
     def solverDisplay(self):
         """Handles the display of the results from the solver algorithm in solver frame"""
         self.wordsRem = tk.StringVar()

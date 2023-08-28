@@ -42,6 +42,8 @@ class Solver:
                 wordShortValues[word] = ShortSum
                 ShortSum = 0
 
+        """Implement the  only  rec poss words if <= 2 here probably"""
+
         #Get current sum of probabilities to normalize them
         Sum = sum(wordValues.values())
         ShortTotalSum = sum(wordShortValues.values())
