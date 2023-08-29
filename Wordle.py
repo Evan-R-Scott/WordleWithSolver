@@ -428,7 +428,7 @@ class Wordy:
     
     def SolverCalculations(self):
         """Probability and Entropy calculations top recommendations handler"""
-        self.sortedWordValues, self.totalEntropy = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
+        self.sortedWordValues, self.totalEntropy, self.trackerValidation = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
         
         self.solverDisplay()
 
@@ -536,7 +536,7 @@ class Wordy:
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
 
-        self.sortedWordValues, self.totalEntropy = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
+        self.sortedWordValues, self.totalEntropy, self.trackerValidation = self.SolverClass.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
 
         self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
         self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
@@ -581,18 +581,31 @@ class Wordy:
                     n = len(self.sortedWordValues)
                 else:
                     n = 10
+
                 topWords =  heapq.nlargest(n, self.sortedWordValues.items(), key=lambda item: item[1])
-                for key, value in topWords:
-                    if key in self.curPosswrds:
-                        isPossSolution = 'Yes'
-                    else: 
-                        isPossSolution = '        '
-                    self.Recomendation = tk.Message(self.solver_frame, text = key + "                " + isPossSolution +"          " + 
+
+                if self.trackerValidation == False:
+                    for key, value in topWords:
+                        if key in self.curPosswrds:
+                            isPossSolution = 'Yes'
+                        else: 
+                            isPossSolution = '        '
+                        self.Recomendation = tk.Message(self.solver_frame, text = key + "                " + isPossSolution +"          " + 
                                                     str(round(value, 6)),
                                                     font = self.Header, width = 195)
-                    self.Recomendation.grid(row = r, column = 1, sticky = 'e', padx = 5)
-                    self.delWidgets.append(self.Recomendation)
-                    r += 1
+                        self.Recomendation.grid(row = r, column = 1, sticky = 'e', padx = 5)
+                        self.delWidgets.append(self.Recomendation)
+                        r += 1
+                else:
+                    for key,value in self.sortedWordValues.items():
+                        if key in self.curPosswrds:
+                            isPossSolution = 'Yes'
+                            self.Recomendation = tk.Message(self.solver_frame, text = key + "                " + isPossSolution +"          " + 
+                                                    str(round(value, 6)),
+                                                    font = self.Header, width = 195)
+                            self.Recomendation.grid(row = r, column = 1, sticky = 'e', padx = 5)
+                            self.delWidgets.append(self.Recomendation)
+                            r += 1
 
     #Handlers For Buttons and messages
     def mustBeWord(self):

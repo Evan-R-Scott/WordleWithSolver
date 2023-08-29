@@ -19,6 +19,8 @@ class Solver:
         wordShortValues = {}
         totalSum = 0
         ShortSum = 0
+        wordTracker = 0
+        TrackerValidation = False
 
         #Calculate weight of a word through the summation of its individual letters' probabilities
         for word in curTotalList:
@@ -39,10 +41,12 @@ class Solver:
             wordValues[word] = totalSum
             totalSum = 0
             if word in curPossList:
+                wordTracker += 1
                 wordShortValues[word] = ShortSum
                 ShortSum = 0
 
-        """Implement the  only  rec poss words if <= 2 here probably"""
+        if wordTracker <= 2:
+            TrackerValidation = True
 
         #Get current sum of probabilities to normalize them
         Sum = sum(wordValues.values())
@@ -60,4 +64,4 @@ class Solver:
             totalEntropy = 0.0
 
         #Return dictionary that has all the remaining guesable words and their weighted values
-        return wordValues , totalEntropy
+        return wordValues , totalEntropy, TrackerValidation
