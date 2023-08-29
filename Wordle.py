@@ -576,7 +576,9 @@ class Wordy:
                 self.keyy1.grid(row = 17, column = 1)
                 self.keyy2.grid(row = 19, column = 1)
                 self.keyy3.grid(row = 20, column = 1)
-
+                
+                #Below code handles the word recommendations displaying aspect of the solver
+                
                 if len(self.sortedWordValues) < 10:
                     n = len(self.sortedWordValues)
                 else:
