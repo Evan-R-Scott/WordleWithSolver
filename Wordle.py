@@ -1,17 +1,5 @@
 """                               RUN ME FOR WORDLE              """
-"""
-Made By Evan Scott
-Description: Wordle imitation program that is fully functional
-and incorporates an optional solving algorithm which adapts based on guesses entered
-to recommend the most optimal/value-driven guesses based on a number of factors.
-Concepts/Factors incorporated: 
-- Information Theory
-- Entropy (the minization of uncertainty in as short of steps as possible)
-- Tested data sets - (such as) frequency of letters in the english language and 
-location of these said letters in a 5 letter word
-- Renormalization
 
-"""
 #import statements
 import DatasetDictionaryInitialization
 import AlgorithmCalc

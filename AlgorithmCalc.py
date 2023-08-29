@@ -2,7 +2,6 @@
 in the word recommendation process utilized by the solver"""
 #import statements
 from decimal import Decimal, getcontext
-import math 
 import numpy as np
 
 class Solver:
