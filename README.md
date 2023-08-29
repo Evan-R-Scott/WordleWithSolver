@@ -10,6 +10,11 @@ Concepts/Factors incorporated:
 location of these said letters in a 5 letter word
 - Renormalization
 
+SolverAlg.py - 
+
+AlgorithmCalc.py -  Class utilized by solver algorithm containing methods of calculations for the value/weight of a word and current sum entropy which assists
+in the word recommendation process utilized by the solver
+
 DictionariesInGraphs.py - This file contains the contents for creating the bar graph/plot which visualizes the range of 
 probabilities for both the general letter frequency dictionary and the letter in specific locations (of a 5 letter word)
 frequencies dictionary 
