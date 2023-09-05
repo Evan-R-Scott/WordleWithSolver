@@ -2,7 +2,6 @@
 
 #import statements
 import Solver
-
 import random
 import tkinter as tk
 import time
@@ -75,6 +74,7 @@ class Wordy:
 
         self.restartGame = False
 
+        #Information about colors of letters (green/yellow/gray) passed to solver algorithm
         self.ColorForLetterInfo = [[], [[],[],[],[],[]], ['','','','',''], []]
 
         # Parameters for the keyboard frame
@@ -141,11 +141,12 @@ class Wordy:
         self.solver_frame.grid(row = 1, column = 1, rowspan = 2)
         self.solver_frame.grid_propagate(False)
 
-         #initialize solver
+         #Initialize solver
         self.Solver = Solver.WordleSolver(self.solver_frame)
 
     def gameScreen(self):
         """Game play frame creation"""
+
         self.game_frame = tk.Frame(self.window, 
             borderwidth = 1, relief = 'solid',
             height = self.PARENT_GUESS_FRAME_HEIGHT, width = self.PARENT_GUESS_FRAME_WIDTH)
@@ -154,6 +155,7 @@ class Wordy:
 
     def guessFrames(self):
         """The game play screen where the guesses are displayed"""
+
         for r in range(self.NUM_GUESSES):
             for c in range(self.WORD_SIZE):
                 frames  = tk.Frame(self.game_frame,
@@ -170,6 +172,7 @@ class Wordy:
 
     def keyScreen(self):
         """Keyboard Frame"""
+
         self.key_frame = tk.Frame(self.window, 
             borderwidth = 1, relief = 'solid',
             height = self.KEYBOARD_FRAME_HEIGHT, width = self.PARENT_GUESS_FRAME_WIDTH)
@@ -178,6 +181,7 @@ class Wordy:
 
     def keybuttons(self):
         """Displays the buttons onto key screen in the form of a keyboard"""
+
         for r in range(len(self.KEYBOARD_BUTTON_NAMES)):
             for c in range(len(self.KEYBOARD_BUTTON_NAMES[r])):
                 
@@ -206,9 +210,8 @@ class Wordy:
         self.key_frame.columnconfigure(len(self.KEYBOARD_BUTTON_NAMES[0]) + 1, weight = 1)
 
     def button_handler(self, text):
-        """
-        Changes the color of the button that was pressed(green/yellow/gray)
-        """ 
+        """Changes the color of the button that was pressed(green/yellow/gray)""" 
+
         if(self.curColumn <= self.WORD_SIZE and self.curRow -1 < self.NUM_GUESSES and self.gamestarted == True):
             let = tk.Message(self.game_frame, text= text, font=self.FONT_FAMILY, aspect= self.FONT_SIZE_GUESS, bg= 'white')
             let.grid(row= self.curRow, column= self.curColumn)
@@ -217,6 +220,7 @@ class Wordy:
 
     def backHandler(self):
         """If back is pressed erases the current letter"""
+
         if(self.curColumn > 1 and self.gamestarted == True):
             self.curColumn -= 1
             let = tk.Message(self.game_frame, text= ' ', font=self.FONT_FAMILY, aspect= self.FONT_SIZE_GUESS, bg = 'white')
@@ -226,6 +230,7 @@ class Wordy:
     def enterHandler(self):
         """Handle what happens when enter is pressed: it is not a word, it is too short, play again,
         it is the right answer or all guesses are used up"""
+
         if self.answer == self.curGuess:
             time.sleep(self.PROCESS_GUESS_WAITTIME)
             self.displayEntered()
@@ -260,9 +265,8 @@ class Wordy:
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
    
     def displayEntered(self):
-        """
-        Letter handler for transitioning between gray/yellow/green both in display and solver algorithm
-        """
+        """Letter handler for transitioning between gray/yellow/green both in display and solver algorithm"""
+
         guessDic = {} #keys as letters and values as number of occurances
         answerDic = {}
         lst1 = []
@@ -298,7 +302,7 @@ class Wordy:
                     answerDic[self.answer[i]] = 1
 
             if curLetterColor == self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC:
-                if self.curGuess[i] not in self.ColorForLetterInfo[2][i]:
+                if self.ColorForLetterInfo[2][i] == "":
                     self.ColorForLetterInfo[2][i] = self.curGuess[i]
                 curLetterColor = str()
 
@@ -352,14 +356,16 @@ class Wordy:
                 if self.curGuess[i-1] not in self.ColorForLetterInfo[0]:
                     self.ColorForLetterInfo[0].append(self.curGuess[i-1])
                 curLetterColor = str()
-        
-        self.UseSolver()
+
+        if self.solver_bool.get() == True:
+            self.UseSolver()
     
     def UseSolver(self):
-        self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
+            self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
 
     def messageScreen(self):
         """Message Frame"""
+
         self.messageString = tk.StringVar()
         self.messageFrame = tk.Frame(self.conrtol, borderwidth = 1, relief = 'solid',
             height = self.CONTROL_FRAME_HEIGHT/3, width = self.CONTROL_FRAME_WIDTH)
@@ -374,6 +380,7 @@ class Wordy:
 
     def parameterScreen(self):
         """ Initialize Parameter frame and checkbox options within"""
+
         if(self.gamestarted == False):
             self.specify_word_bool = tk.BooleanVar()
             self.specify_word_bool.set(False)
@@ -429,6 +436,7 @@ class Wordy:
 
     def buttonFrame(self):
         """Button Frame"""
+
         self.button = tk.Frame(self.conrtol, 
             borderwidth = 1, relief = 'solid',
             height = self.CONTROL_FRAME_HEIGHT/3, width = self.CONTROL_FRAME_WIDTH)
@@ -459,6 +467,7 @@ class Wordy:
     #Handlers For Buttons and messages
     def mustBeWord(self):
         """If must be word is checked then it makes sure that the thing entered is a word"""
+
         if(self.gamestarted == True):
             if self.guess_type_bool.get() == False:
                 self.guess_type.select()
@@ -467,6 +476,7 @@ class Wordy:
 
     def play(self):
         """Play Again handling and game starting execution"""
+
         if(self.restartGame):
             self.window.destroy()
             Wordy()
@@ -474,21 +484,26 @@ class Wordy:
         if(len(self.curGuess) == 0):
             self.display_answer()
             if(self.gamestarted == False):
+                if self.solver_bool.get() == True:
+                    self.Solver.solverDisplay(self.gamestarted, self.solver_bool)
                 self.force_word_check()
                 if(self.gamestarted == True):
                     self.runChecks = 'disabled'
                     self.parameterScreen()
             if(self.gamestarted == True):
-                self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
+                if self.solver_bool.get() == True:
+                    self.Solver.solverDisplay(self.gamestarted, self.solver_bool)
                 self.messageString.set('Game has started')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*500, self.remove_message)
 
     def quit(self):
         """destroy window"""
+
         self.window.destroy()
 
     def force_word_check(self):
         """Checks to see if user wants to assign a word and then if the length is valid"""
+
         if self.specify_word_bool.get() == True:
             if(len(self.entry.get()) != self.WORD_SIZE):
                 self.messageString.set('Incorrect specified word length')
@@ -506,12 +521,14 @@ class Wordy:
 
     def pick_word(self):
         """randomly selcts a word from list"""
+
         self.answer = str.upper(random.choice(self.shortwrd))
         if(len(self.answer) != self.WORD_SIZE):
             self.pick_word()
         
     def display_answer(self):
         """shows answer word when toggled on"""
+
         if self.show_word_bool.get() == True:
             self.displayWordString.set(str.lower(self.answer))
         else:
@@ -519,6 +536,7 @@ class Wordy:
 
     def remove_message(self):
         """removes message string"""
+
         self.messageString.set('')
 
 if __name__ == "__main__":

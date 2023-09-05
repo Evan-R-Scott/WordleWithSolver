@@ -1,7 +1,7 @@
 """              Modularized Code for Solver             """
 #import statements
 import DatasetDictionaryInitialization
-from AlgorithmCalc import SolverCalculations
+from SolverCalculations import SolverCalculationsClass
 
 import tkinter as tk
 import heapq
@@ -11,13 +11,23 @@ class WordleSolver:
 
     def __init__(self, solver_frame):
         self.solver_frame = solver_frame
+
+        self.variablesInitialization()
+        #create instance of Solver Calculations class
+        self.SolverCalc = SolverCalculationsClass(self.totalLettersdictLWFreq)
     
+    def solver(self, ColorForLetterInfo, curGuess, gameStarted, solverBool):
+        self.ColorForLetterInfo = ColorForLetterInfo
+        self.curGuess = curGuess
+        self.gameStarted = gameStarted
+        self.solverBool = solverBool
+
+        self.solverDictUpdate()
+
     def variablesInitialization(self):
         
         getcontext().prec = 30
 
-        #Initialize the list containing 5 dictionaries for each specific spot with letters and probabilities
-        #that get removed and renormalised based on a guess making letters green/gray/yellow
         self.totalLettersdictLWFreq = DatasetDictionaryInitialization.totalLettersdictLWFreq
         self.dictLWFreq = DatasetDictionaryInitialization.dictLWFreq
         
@@ -65,42 +75,28 @@ class WordleSolver:
         self.Key2 = "- POSSIBLE SOLUTION: (Yes) indicates this recommended word is within the Wordle word list and therefore is a potential solution for the Wordle. Absence of a (Yes) suggests the word is from the list of accepted guessable words but cannot be the Wordle solution."
         self.Key3 = "- P(WORD) : Probability/Weight of a word's value within the set of remaining guessable words. A word's value is the summation of its letters' normalized probalities."
 
-    def solver(self, ColorForLetterInfo, curGuess, gameStarted, solverBool):
-        self.ColorForLetterInfo = ColorForLetterInfo
-        self.curGuess = curGuess
-        self.gamestarted = gameStarted
-        self.solver_bool = solverBool
-        
-        self.variablesInitialization()
-        #create instance of Solver Calculations class
-        self.SolverCalc = SolverCalculations(self.totalLettersdictLWFreq)
-
-        self.solverDictUpdate()
-        self.solverDisplay()
-        self.normalization()
-
     def solverDictUpdate(self):
         for i in range(len(self.curGuess)):
             #green letter handler
             if self.curGuess[i] in self.ColorForLetterInfo[2][i]:
-            #keeps track of where correct letters are located when found so we can test other uncertain letters
-                #in that already determined location's answer
                 self.DL04[i] = {self.ColorForLetterInfo[2][i]: 1.0}
+
             #yellow letter handler
-            elif (self.curGuess[i] not in  self.ColorForLetterInfo[1][i] and (len(self.DL04[i]) > 1)):
-                self.DL04[i] = {key: self.DL04[i][key] for key in self.DL04[i]
-                                if key != self.curGuess[i]}
-            elif self.curGuess[i] in self.ColorForLetterInfo[0]:
-            #Handle gray letter removal from dictionaries
+            if len(self.DL04[i]) > 1 and self.ColorForLetterInfo[1][i] != "" and self.curGuess[i] in self.DL04[i]:
+                del self.DL04[i][self.curGuess[i]]
+
+            if self.curGuess[i] in self.ColorForLetterInfo[0]:
+            #gray letter handler
                 for dictionary in self.DL04:
-                # if self.curGuess[i] in self.ColorForLetterInfo[0] and self.curGuess[i] in dictionary:
-                #maybe put these lines after line 447 for gray letter elimination from self.dl04
                     if self.curGuess[i] in dictionary:
                         del dictionary[self.curGuess[i]]
+
+        self.normalization()
     
     def normalization(self):
         """Updates lists for solver algorithm and normalization of probabilities based on 
             gray/yellow letters from previously guessed word"""
+        
         getcontext().prec = 30
         curG = 0
 
@@ -131,10 +127,12 @@ class WordleSolver:
         for recommendation in self.delWidgets:
             recommendation.destroy()
 
-        """Probability and Entropy calculations top recommendations handler"""
+        #Probability and Entropy calculations top recommendations handler
         self.sortedWordValues, self.totalEntropy, self.trackerValidation = self.SolverCalc.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
-    
-    def solverDisplay(self):
+
+        self.solverDisplay(self.gameStarted, self.solverBool)
+
+    def solverDisplay(self, gameStarted, solverBool):
         """Handles the display of the results from the solver algorithm in solver frame"""
 
         self.wordsRem = tk.StringVar()
@@ -151,8 +149,9 @@ class WordleSolver:
         self.curEntRem.set(self.currentEntropy + "\n" +str(self.totalEntropy))
         r = 6
         self.delWidgets = []
-        if(self.gamestarted == True):
-            if self.solver_bool.get() == True:
+
+        if(gameStarted == True):
+            if solverBool.get() == True:
                 self.solverTitle = tk.Message(self.solver_frame,text = self.Title, 
                                                     font = self.HeaderBig, justify = "center",
                                                     width = 180)
