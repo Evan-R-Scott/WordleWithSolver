@@ -4,7 +4,7 @@ in the word recommendation process utilized by the solver"""
 from decimal import Decimal, getcontext
 import numpy as np
 
-class Solver:
+class SolverCalculations:
 
     def __init__(self, letterWeights):
         self.letterWeights = letterWeights

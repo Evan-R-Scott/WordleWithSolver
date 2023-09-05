@@ -141,6 +141,9 @@ class Wordy:
         self.solver_frame.grid(row = 1, column = 1, rowspan = 2)
         self.solver_frame.grid_propagate(False)
 
+         #initialize solver
+        self.Solver = Solver.WordleSolver(self.solver_frame)
+
     def gameScreen(self):
         """Game play frame creation"""
         self.game_frame = tk.Frame(self.window, 
@@ -353,9 +356,7 @@ class Wordy:
         self.UseSolver()
     
     def UseSolver(self):
-        #initialize solver
-        self.Solver = Solver.WordleSolver(self.solver_frame, self.gamestarted, self.solver_bool)
-        self.Solver.solver(self.ColorForLetterInfo, self.curGuess)
+        self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
 
     def messageScreen(self):
         """Message Frame"""
@@ -478,7 +479,7 @@ class Wordy:
                     self.runChecks = 'disabled'
                     self.parameterScreen()
             if(self.gamestarted == True):
-                self.UseSolver()
+                self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
                 self.messageString.set('Game has started')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*500, self.remove_message)
 

@@ -1,7 +1,7 @@
 """              Modularized Code for Solver             """
 #import statements
 import DatasetDictionaryInitialization
-import AlgorithmCalc
+from AlgorithmCalc import SolverCalculations
 
 import tkinter as tk
 import heapq
@@ -9,10 +9,8 @@ from decimal import Decimal, getcontext
 
 class WordleSolver:
 
-    def __init__(self, solver_frame, gameStarted, solverBool):
+    def __init__(self, solver_frame):
         self.solver_frame = solver_frame
-        self.gamestarted = gameStarted 
-        self.solver_bool = solverBool
     
     def variablesInitialization(self):
         
@@ -67,14 +65,19 @@ class WordleSolver:
         self.Key2 = "- POSSIBLE SOLUTION: (Yes) indicates this recommended word is within the Wordle word list and therefore is a potential solution for the Wordle. Absence of a (Yes) suggests the word is from the list of accepted guessable words but cannot be the Wordle solution."
         self.Key3 = "- P(WORD) : Probability/Weight of a word's value within the set of remaining guessable words. A word's value is the summation of its letters' normalized probalities."
 
-    def solver(self, ColorForLetterInfo, curGuess):
+    def solver(self, ColorForLetterInfo, curGuess, gameStarted, solverBool):
         self.ColorForLetterInfo = ColorForLetterInfo
         self.curGuess = curGuess
-
+        self.gamestarted = gameStarted
+        self.solver_bool = solverBool
+        
         self.variablesInitialization()
+        #create instance of Solver Calculations class
+        self.SolverCalc = SolverCalculations(self.totalLettersdictLWFreq)
+
         self.solverDictUpdate()
-        self.normalization()
         self.solverDisplay()
+        self.normalization()
 
     def solverDictUpdate(self):
         for i in range(len(self.curGuess)):
@@ -133,15 +136,16 @@ class WordleSolver:
     
     def solverDisplay(self):
         """Handles the display of the results from the solver algorithm in solver frame"""
-        #create instance of Solver Calculations class
-        self.SolverCalc = AlgorithmCalc.SolverCalculations(self.totalLettersdictLWFreq)
 
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
 
         self.sortedWordValues, self.totalEntropy, self.trackerValidation = self.SolverCalc.WordValueCalc(self.curTotalwrds, self.curPosswrds, self.dictLWFreq, self.DL04)
-
+        
+        self.TotalWordsCount = len(self.curTotalwrds)
+        self.PossibleWordsCount = len(self.curPosswrds)
+        
         self.wordsRem.set(self.totalWordsRemaining + "\n" + str(self.TotalWordsCount))
         self.possWordsRem.set(self.possibleOutcomeText + "\n" + str(self.PossibleWordsCount))
         self.curEntRem.set(self.currentEntropy + "\n" +str(self.totalEntropy))
