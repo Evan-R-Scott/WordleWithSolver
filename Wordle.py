@@ -94,9 +94,12 @@ class Wordy:
 
 
         #Trackers for Green/Yellow/Gray Letters
-        self.correctLetters = [0,0,0,0,0]
-        self.tempLocYellow = [[],[],[],[],[]]
+        self.correctLetters = ['','','','','']
         self.Yellows = []
+        self.ColorForLetterInfo = [[], [[],[],[],[],[]], ['','','','','']]
+        #gray self.ColorForLetterInfo[0].append(letter)
+        #yellow self.ColorForLetterInfo[1][i].append(letter)
+        #green self.ColorForLetterInfo[2].append(letter)
 
         #Solver variables
         self.FontHeader = 8
@@ -341,9 +344,12 @@ class Wordy:
         answerDic = {}
         lst1 = []
         lst2 = []
+        curLetterColor = ""
+
         for i in range(len(self.curGuess)): #makes back ground green if right let and loc otherwise adds a dictionary of letters in guess and 
             lst1.append(i+1)
             if(self.curGuess[i] == self.answer[i]): #turns the color green
+                curLetterColor = self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC
                 lst2.append(i+1)
                 #keeps track of where correct letters are located when found so we can test other uncertain letters
                 #in that already determined location's answer
@@ -371,9 +377,16 @@ class Wordy:
                     answerDic[self.answer[i]] += 1
                 else:
                     answerDic[self.answer[i]] = 1
+
+            if curLetterColor == self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC:
+                if self.curGuess[i] not in self.ColorForLetterInfo[2][i]:
+                    self.ColorForLetterInfo[2][i] = self.curGuess[i]
+                curLetterColor = str()
             
             #Handle gray letter removal from dictionaries
             for dictionary in self.DL04:
+                # if self.curGuess[i] in self.ColorForLetterInfo[0] and self.curGuess[i] in dictionary:
+                #maybe put these lines after line 447 for gray letter elimination from self.dl04
                 if self.curGuess[i] not in self.answer and self.curGuess[i] in dictionary:
                     del dictionary[self.curGuess[i]]
 
@@ -388,12 +401,13 @@ class Wordy:
                             if self.curGuess[t] not in self.Yellows:
                                 self.Yellows.append(self.curGuess[t])
                             #Handle yellow letter removal from only the current dictionary
-                            if (self.curGuess[t] not in self.tempLocYellow[t] and (len(self.DL04[t]) > 1)):
-                                    self.tempLocYellow[t].append(self.curGuess[t])
+                            if (self.curGuess[t] not in  self.ColorForLetterInfo[1][t] and (len(self.DL04[t]) > 1)):
+
                                     self.DL04[t] = {key: self.DL04[t][key] for key in self.DL04[t]
                                                     if key != self.curGuess[t]}
                         #Makes letter frame yellow
                         if self.curGuess[t] != self.answer[t] and self.curGuess[t] == i:
+                            curLetterColor = self.GUESS_FRAME_BG_CORRECT_WRONG_LOC
                             frames  = tk.Frame(self.game_frame,
                                         borderwidth = 1, relief = 'solid',
                                         width = self.GUESS_FRAME_SIZE,
@@ -407,8 +421,14 @@ class Wordy:
                             lst2.append(t+1)
                             self.buttons[self.curGuess[t]]['fg'] = self.GUESS_FRAME_BG_CORRECT_WRONG_LOC
 
+                        if curLetterColor == self.GUESS_FRAME_BG_CORRECT_WRONG_LOC:
+                            if self.curGuess[t] not in self.ColorForLetterInfo[1][t]:
+                                self.ColorForLetterInfo[1][t].append(self.curGuess[t])
+                            curLetterColor = str()
+
         for i in lst1: #if it has not changed colors then it will go grey
             if i not in lst2:
+                curLetterColor = self.GUESS_FRAME_BG_WRONG
                 #Makes letter frame gray
                 frames  = tk.Frame(self.game_frame,
                                             borderwidth = 1, relief = 'solid',
@@ -420,6 +440,13 @@ class Wordy:
                                 aspect= self.FONT_SIZE_GUESS, fg= 'white', bg= self.GUESS_FRAME_BG_WRONG)
                 let.grid(row= self.curRow, column= i)
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
+
+            if curLetterColor == self.GUESS_FRAME_BG_WRONG:
+                if self.curGuess[i-1] not in self.ColorForLetterInfo[0]:
+                    self.ColorForLetterInfo[0].append(self.curGuess[i-1])
+                curLetterColor = str()
+
+        print(self.ColorForLetterInfo)
 
         self.renormalization()
     
