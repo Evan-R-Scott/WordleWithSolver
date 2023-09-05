@@ -63,9 +63,6 @@ class Wordy:
             for key in self.DL04[i]:
                 self.DL04[i][key] = float(str(Decimal(self.DL04[i][key]) / Decimal(totalSum)))
 
-        #create instance of Solver Calculations class
-        self.SolverClass = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
-
         # Size of the frame that holds all guesses.  This is the upper left
         # frame in the window.
         self.PARENT_GUESS_FRAME_WIDTH = 750
@@ -532,6 +529,9 @@ class Wordy:
     
     def solverDisplay(self):
         """Handles the display of the results from the solver algorithm in solver frame"""
+        #create instance of Solver Calculations class
+        self.SolverClass = AlgorithmCalc.Solver(self.totalLettersdictLWFreq)
+
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
         self.curEntRem = tk.StringVar()
@@ -601,9 +601,13 @@ class Wordy:
                 else:
                     for key,value in self.sortedWordValues.items():
                         if key in self.curPosswrds:
+                            if len(self.curPosswrds) == 2:
+                                self.sortedWordValues[key] = 0.50000
+                            elif len(self.curPosswrds) == 1:
+                                self.sortedWordValues[key] = 1.00000
                             isPossSolution = 'Yes'
                             self.Recomendation = tk.Message(self.solver_frame, text = key + "                " + isPossSolution +"          " + 
-                                                    str(round(value, 6)),
+                                                    str(round(self.sortedWordValues[key], 6)),
                                                     font = self.Header, width = 195)
                             self.Recomendation.grid(row = r, column = 1, sticky = 'e', padx = 5)
                             self.delWidgets.append(self.Recomendation)
