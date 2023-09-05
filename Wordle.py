@@ -382,13 +382,6 @@ class Wordy:
                 if self.curGuess[i] not in self.ColorForLetterInfo[2][i]:
                     self.ColorForLetterInfo[2][i] = self.curGuess[i]
                 curLetterColor = str()
-            
-            #Handle gray letter removal from dictionaries
-            for dictionary in self.DL04:
-                # if self.curGuess[i] in self.ColorForLetterInfo[0] and self.curGuess[i] in dictionary:
-                #maybe put these lines after line 447 for gray letter elimination from self.dl04
-                if self.curGuess[i] not in self.answer and self.curGuess[i] in dictionary:
-                    del dictionary[self.curGuess[i]]
 
         for i in guessDic.keys(): #looks through the dictionary containing letters in the guess and the number of times it occurs and adds yellow frames
             if i in answerDic.keys():
@@ -446,8 +439,17 @@ class Wordy:
                     self.ColorForLetterInfo[0].append(self.curGuess[i-1])
                 curLetterColor = str()
 
+        for i in range(len(self.curGuess)):
+            #Handle gray letter removal from dictionaries
+            for dictionary in self.DL04:
+                # if self.curGuess[i] in self.ColorForLetterInfo[0] and self.curGuess[i] in dictionary:
+                #maybe put these lines after line 447 for gray letter elimination from self.dl04
+                if self.curGuess[i] in self.ColorForLetterInfo[0] and self.curGuess[i] in dictionary:
+                    del dictionary[self.curGuess[i]]
+
         print(self.ColorForLetterInfo)
 
+        #call solver class from other file to do all the solver stuff from various functions here
         self.renormalization()
     
     def SolverCalculations(self):
