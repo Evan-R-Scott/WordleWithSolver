@@ -1,4 +1,4 @@
-"""              Modularized Code for Solver used by Wordle.py program             """
+"""              Modularized Code for Solver Algorithm used by Wordle.py program             """
 #import statements
 import DatasetDictionaryInitialization
 from SolverCalculations import SolverCalculationsClass

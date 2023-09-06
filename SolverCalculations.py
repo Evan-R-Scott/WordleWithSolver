@@ -1,5 +1,5 @@
-""" Class utilized by solver algorithm containing methods of calculations for the value/weight of a word and current sum entropy which assists
-in the word recommendation process utilized by the solver"""
+""" Class utilized by Solver Algorithm containing methods of calculations for the value/weight 
+of a word and current sum entropy which assists in the word recommendation process"""
 #import statements
 from decimal import Decimal, getcontext
 import numpy as np
