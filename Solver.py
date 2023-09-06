@@ -1,4 +1,4 @@
-"""              Modularized Code for Solver             """
+"""              Modularized Code for Solver used by Wordle.py program             """
 #import statements
 import DatasetDictionaryInitialization
 from SolverCalculations import SolverCalculationsClass
@@ -26,8 +26,10 @@ class WordleSolver:
 
     def variablesInitialization(self):
         
+        #Rounding Specificity for Normalization
         getcontext().prec = 30
 
+        #Initialize dictionaries filled with dataset information
         self.totalLettersdictLWFreq = DatasetDictionaryInitialization.totalLettersdictLWFreq
         self.dictLWFreq = DatasetDictionaryInitialization.dictLWFreq
         
@@ -35,6 +37,8 @@ class WordleSolver:
         self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/long_wordlist.txt"
         self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/short_wordlist.txt"
 
+        #Initialize lists of words 
+        #Lists are reduced as guesses are made since letters are eliminated or discovered
         self.curTotalwrds = []
         f = open( self.LONG_WORDLIST_FILENAME, 'r')
         for wrd in f:
@@ -47,6 +51,7 @@ class WordleSolver:
             self.curPosswrds.append(wrd.strip())
         f.close()
 
+        #Initialize main 5-way dictionary used for Solver
         self.DL04 =  []
         for i in range(5):
             new_dict = {key: value for key, value in self.totalLettersdictLWFreq.items()}
@@ -57,7 +62,7 @@ class WordleSolver:
             for key in self.DL04[i]:
                 self.DL04[i][key] = float(str(Decimal(self.DL04[i][key]) / Decimal(totalSum)))
 
-        #Solver variables
+        #Variables for Message/Label Widgets
         self.FontHeader = 8
         self.KeyFont = 7
         self.FontRecommendations = 4
@@ -65,17 +70,24 @@ class WordleSolver:
         self.KeyText = (self.FONT_FAMILY, self.KeyFont)
         self.Header = (self.FONT_FAMILY, self.FontHeader)
         self.HeaderBig = (self.FONT_FAMILY, self.KeyFont, 'bold', 'underline')
+
+        #Variables for Headers and Key Solver Information
         self.Title = "Solver"
         self.totalWordsRemaining = "Guessable Words Remaining:"
         self.currentEntropy = "Current Entropy/Uncertainty:"
         self.possibleOutcomeText = "Potential Solution Words Remaining:"
         self.RecommendationHeader = "Top Picks || Possible Solution || P(Word)"
+
+        #Key Info Variables
         self.Key = "Key Info"
         self.Key1 = "- TOP PICKS : Of the remaining words, the words within this column are the top recommendations offered by the solver as they offer the most value towards completing the Wordle."
         self.Key2 = "- POSSIBLE SOLUTION: (Yes) indicates this recommended word is within the Wordle word list and therefore is a potential solution for the Wordle. Absence of a (Yes) suggests the word is from the list of accepted guessable words but cannot be the Wordle solution."
         self.Key3 = "- P(WORD) : Probability/Weight of a word's value within the set of remaining guessable words. A word's value is the summation of its letters' normalized probalities."
 
     def solverDictUpdate(self):
+        """Handler of the 5-way dictionary - Removes letters based on letter information gained 
+        from previous guesses"""
+        
         for i in range(len(self.curGuess)):
             #green letter handler
             if self.curGuess[i] in self.ColorForLetterInfo[2][i]:
@@ -94,8 +106,8 @@ class WordleSolver:
         self.normalization()
     
     def normalization(self):
-        """Updates lists for solver algorithm and normalization of probabilities based on 
-            gray/yellow letters from previously guessed word"""
+        """Updates lists for solver algorithm and normalization of probabilities within the 5-way dictionary 
+        based on previously guessed words"""
         
         getcontext().prec = 30
         curG = 0
@@ -133,7 +145,7 @@ class WordleSolver:
         self.solverDisplay(self.gameStarted, self.solverBool)
 
     def solverDisplay(self, gameStarted, solverBool):
-        """Handles the display of the results from the solver algorithm in solver frame"""
+        """Handles the display of all the results from the solver algorithm in the solver frame"""
 
         self.wordsRem = tk.StringVar()
         self.possWordsRem = tk.StringVar()
@@ -150,6 +162,7 @@ class WordleSolver:
         r = 6
         self.delWidgets = []
 
+        #Below code handles the display of the general information from Solver such as words remaining and entropy
         if(gameStarted == True):
             if solverBool.get() == True:
                 self.solverTitle = tk.Message(self.solver_frame,text = self.Title, 
@@ -184,7 +197,7 @@ class WordleSolver:
                 self.keyy2.grid(row = 19, column = 1)
                 self.keyy3.grid(row = 20, column = 1)
                 
-                #Below code handles the word recommendations displaying aspect of the solver
+        #Below code handles the word recommendations displaying aspect of the solver
                 
                 if len(self.sortedWordValues) < 10:
                     n = len(self.sortedWordValues)

@@ -10,6 +10,7 @@ class Wordy:
     #constructor
     def __init__(self):
         """Function calls to initialize the game window"""
+
         self.variablesDontEdit()    #variables that do not affect game play
         self.variablesEdit()        #The universal variables
         self.makeWrdLst()           #Makes all the words into a list
@@ -24,6 +25,7 @@ class Wordy:
         
     def variablesDontEdit(self):
         """Variables used throughout the program for accurate wordle gameplay"""
+
         self.gamestarted = False
         self.runChecks = 'normal'
         self.text = ''
@@ -72,9 +74,10 @@ class Wordy:
         self.FONT_FAMILY = 'ariel'          # Font to use for letters in the guess boxes.
         self.FONT_SIZE_GUESS = 35           # Font size for letters in the guess boxes.
 
+        #initialize option to play the Wordle again
         self.restartGame = False
 
-        #Information about colors of letters (green/yellow/gray) passed to solver algorithm
+        #Information about colors of letters (green/yellow/gray) passed to solver algorithm initialization
         self.ColorForLetterInfo = [[], [[],[],[],[],[]], ['','','','',''], []]
 
         # Parameters for the keyboard frame
@@ -123,6 +126,7 @@ class Wordy:
 
     def setScreen(self):
         """Window for Wordle creation"""
+
         # Create window
         self.window = tk.Tk()
         self.window.title("Wordy")
@@ -141,7 +145,7 @@ class Wordy:
         self.solver_frame.grid(row = 1, column = 1, rowspan = 2)
         self.solver_frame.grid_propagate(False)
 
-         #Initialize solver
+        #Initialize solver
         self.Solver = Solver.WordleSolver(self.solver_frame)
 
     def gameScreen(self):
@@ -265,7 +269,7 @@ class Wordy:
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*1000, self.remove_message)
    
     def displayEntered(self):
-        """Letter handler for transitioning between gray/yellow/green both in display and solver algorithm"""
+        """Letter handler for transitioning between gray/yellow/green grids in the display"""
 
         guessDic = {} #keys as letters and values as number of occurances
         answerDic = {}
@@ -275,7 +279,7 @@ class Wordy:
 
         for i in range(len(self.curGuess)): #makes back ground green if right let and loc otherwise adds a dictionary of letters in guess and 
             lst1.append(i+1)
-            if(self.curGuess[i] == self.answer[i]): #turns the color green
+            if(self.curGuess[i] == self.answer[i]):
                 curLetterColor = self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC
                 lst2.append(i+1)
                 #Makes letter frame green
@@ -301,6 +305,7 @@ class Wordy:
                 else:
                     answerDic[self.answer[i]] = 1
 
+            #Green Tracker for Solving Algorithm
             if curLetterColor == self.GUESS_FRAME_BG_CORRECT_RIGHT_LOC:
                 if self.ColorForLetterInfo[2][i] == "":
                     self.ColorForLetterInfo[2][i] = self.curGuess[i]
@@ -331,7 +336,8 @@ class Wordy:
                             num -= 1
                             lst2.append(t+1)
                             self.buttons[self.curGuess[t]]['fg'] = self.GUESS_FRAME_BG_CORRECT_WRONG_LOC
-
+                        
+                        #Yellow Tracker for Solving Algorithm
                         if curLetterColor == self.GUESS_FRAME_BG_CORRECT_WRONG_LOC:
                             if self.curGuess[t] not in self.ColorForLetterInfo[1][t]:
                                 self.ColorForLetterInfo[1][t].append(self.curGuess[t])
@@ -352,16 +358,22 @@ class Wordy:
                 let.grid(row= self.curRow, column= i)
                 self.buttons[self.curGuess[i-1]]['fg'] = self.GUESS_FRAME_BG_WRONG
 
+            #Gray Tracker for Solving Algorithm
             if curLetterColor == self.GUESS_FRAME_BG_WRONG:
                 if self.curGuess[i-1] not in self.ColorForLetterInfo[0]:
                     self.ColorForLetterInfo[0].append(self.curGuess[i-1])
                 curLetterColor = str()
 
+        #Run Solver only if the Solver option has been selected
         if self.solver_bool.get() == True:
             self.UseSolver()
     
+    #Solver Call
     def UseSolver(self):
-            self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
+        """Calls Solver Class from Solver.py to execute its solving algorithm for best recommendations based
+        on current information the user has"""
+
+        self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
 
     def messageScreen(self):
         """Message Frame"""
@@ -464,9 +476,9 @@ class Wordy:
         
         self.window.mainloop()
         
-    #Handlers For Buttons and messages
     def mustBeWord(self):
-        """If must be word is checked then it makes sure that the thing entered is a word"""
+        """Handlers For Buttons and messages - If must be word is checked then it makes 
+        sure that the thing entered is a word"""
 
         if(self.gamestarted == True):
             if self.guess_type_bool.get() == False:
@@ -497,7 +509,7 @@ class Wordy:
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*500, self.remove_message)
 
     def quit(self):
-        """destroy window"""
+        """Destroy Window/Quit Wordle Application"""
 
         self.window.destroy()
 
