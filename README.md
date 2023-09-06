@@ -4,11 +4,12 @@ Wordle.py - Wordle imitation program that is fully functional utilizing Tkinter 
 It incorporates an optional solving algorithm which adapts based on information gain from previous guesses
 to recommend the most optimal/value-driven guesses based on a number of factors.
 Concepts/Factors incorporated in this Solver: 
-- Information Theory
-- Entropy (the minization of uncertainty in as short of steps as possible)
-- Tested data sets - (such as) frequency of letters in the english language and 
-location of these said letters in a 5 letter word
-- Renormalization
+- Entropy - average level of uncertainty/unknown information remaining based on possible outcomes
+  (In terms of Wordle application, this can be viewed as the possible solutions we have remaining and how many steps
+  it would take to get down to 1 word remaining (the Wordle answer)
+- Information Theory/Information Gain - the minization of entropy/uncertainty in as short of steps as possible
+- Tested data sets - (such as) frequency of letters in the english language and location of these said letters in a 5 letter word
+- Renormalization - refactoring of probabilities for summation of 1 as letter information is gained from guessing words
 
 Solver.py - Modularized code for Solver Algorithm utilized by Wordle.py program only if the user desires the assistance by the Solver
 
