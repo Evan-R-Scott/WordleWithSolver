@@ -1,18 +1,18 @@
 # WordleRepo
 
 Wordle.py - Wordle imitation program that is fully functional utilizing Tkinter which is Python's GUI interface.
-It incorporates an optional solving algorithm which adapts based on guesses entered
+It incorporates an optional solving algorithm which adapts based on information gain from previous guesses
 to recommend the most optimal/value-driven guesses based on a number of factors.
-Concepts/Factors incorporated: 
+Concepts/Factors incorporated in this Solver: 
 - Information Theory
 - Entropy (the minization of uncertainty in as short of steps as possible)
 - Tested data sets - (such as) frequency of letters in the english language and 
 location of these said letters in a 5 letter word
 - Renormalization
 
-SolverAlg.py - 
+Solver.py - Modularized code for Solver Algorithm utilized by Wordle.py program only if the user desires the assistance by the Solver
 
-AlgorithmCalc.py -  Class utilized by solver algorithm containing methods of calculations for the value/weight of a word and current sum entropy which assists
+SolverCalculations.py -  Class utilized by solver algorithm containing methods of calculations for the value/weight of a word and current sum entropy which assists
 in the word recommendation process utilized by the solver
 
 DictionariesInGraphs.py - This file contains the contents for creating the bar graph/plot which visualizes the range of 
