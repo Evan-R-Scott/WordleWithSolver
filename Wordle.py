@@ -42,8 +42,8 @@ class Wordy:
         self.NUM_GUESSES = 6 # number of guesses that the user gets 
 
         #Files to be opened and read
-        self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/long_wordlist.txt"
-        self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/short_wordlist.txt"
+        self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Dataset Text Files/long_wordlist.txt"
+        self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Dataset Text Files/short_wordlist.txt"
 
         # Size of the frame that holds all guesses.  This is the upper left
         # frame in the window.

@@ -34,8 +34,8 @@ class WordleSolver:
         self.dictLWFreq = DatasetDictionaryInitialization.dictLWFreq
         
         #Files to be opened and read
-        self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/long_wordlist.txt"
-        self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/short_wordlist.txt"
+        self.LONG_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Dataset Text Files/long_wordlist.txt"
+        self.SHORT_WORDLIST_FILENAME = "/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Dataset Text Files/short_wordlist.txt"
 
         #Initialize lists of words 
         #Lists are reduced as guesses are made since letters are eliminated or discovered
