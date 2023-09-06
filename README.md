@@ -6,7 +6,7 @@ to recommend the most optimal/value-driven guesses based on a number of factors.
 Concepts/Factors incorporated in this Solver: 
 - Entropy - average level of uncertainty/unknown information remaining based on possible outcomes
   (In terms of Wordle application, this can be viewed as the possible solutions we have remaining and how many steps
-  it would take to get down to 1 word remaining (the Wordle answer)
+  it would take to get down to 1 word remaining (the Wordle answer))
 - Information Theory/Information Gain - the minization of entropy/uncertainty in as short of steps as possible
 - Tested data sets - (such as) frequency of letters in the english language and location of these said letters in a 5 letter word
 - Renormalization - refactoring of probabilities for summation of 1 as letter information is gained from guessing words
@@ -24,8 +24,7 @@ DatasetDictionaryInitialization.py - This program initializes the dictionaries a
 1 range >>> explanation below 
 
   **Long_wordlist.txt - initalize dictionary ({key: [letter 1, letter 2, ... letter 5]}) for
-  the tracking of occurrences for 
-  specific letters in specific spots of the five letter words 
+  the tracking of occurrences for specific letters in specific spots of the five letter words 
   divide by the total occurrences of that letter in the list so each probability
   for each letter in different spots sums to 1 for proportionality across data set scaling
   Example: {A: [], B: []} which will become {A: [40, 32, 19, 24, 3], B: [13, 46, 92, 8, 29]}
@@ -34,5 +33,5 @@ DatasetDictionaryInitialization.py - This program initializes the dictionaries a
 
   **LetterFrequency - initialize dictionary ({key: frequency weight value of letter occurring})
   and divide those experiment-calculated values by total letter occurrences to get the summation of all 
-  probabilities for all letters to be 1 for proportionality across data set scaling
+  probabilities for all letters to be equal to 1 for proportionality across data set scaling
   Example: {A: 0.24, B: 0.06, C: 0.19, ..., Z: 0.005} and this will sum to == 1 like the other dictionary
