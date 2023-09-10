@@ -79,6 +79,7 @@ class Wordy:
 
         #Information about colors of letters (green/yellow/gray) passed to solver algorithm initialization
         self.ColorForLetterInfo = [[], [[],[],[],[],[]], ['','','','',''], []]
+        self.guessCount = 0
 
         # Parameters for the keyboard frame
         self.KEYBOARD_FRAME_HEIGHT = 200
@@ -276,6 +277,7 @@ class Wordy:
         lst1 = []
         lst2 = []
         curLetterColor = ""
+        self.guessCount += 1
 
         for i in range(len(self.curGuess)): #makes back ground green if right let and loc otherwise adds a dictionary of letters in guess and 
             lst1.append(i+1)
@@ -364,16 +366,27 @@ class Wordy:
                     self.ColorForLetterInfo[0].append(self.curGuess[i-1])
                 curLetterColor = str()
 
-        #Run Solver only if the Solver option has been selected
-        if self.solver_bool.get() == True:
-            self.UseSolver()
+        self.UseSolver()
     
     #Solver Call
     def UseSolver(self):
         """Calls Solver Class from Solver.py to execute its solving algorithm for best recommendations based
         on current information the user has"""
-
         self.Solver.solver(self.ColorForLetterInfo, self.curGuess, self.gamestarted, self.solver_bool)
+
+    def showSolver(self):
+        temp = 0
+        if self.solver_bool.get() == True:
+           if temp != self.guessCount:
+               self.UseSolver()
+           else:
+               for widget in self.solver_frame.winfo_children():
+                    widget.grid()
+        else:
+            temp = self.guessCount
+            #user doesn't want solver assistance so remove the info provided by solver
+            for widget in self.solver_frame.winfo_children():
+                    widget.grid_remove()
 
     def messageScreen(self):
         """Message Frame"""
@@ -427,7 +440,7 @@ class Wordy:
 
         #Solver enable option
         self.solver = tk.Checkbutton(self.parameter, text="Solver Assistance Algorithm", 
-                            var = self.solver_bool, state = self.runChecks)
+                            var = self.solver_bool, command = self.showSolver)
         self.solver.grid(row = 4, column = 1, sticky = tk.W, pady = self.GUESS_FRAME_PADDING)
 
         #Specify Word
@@ -496,15 +509,12 @@ class Wordy:
         if(len(self.curGuess) == 0):
             self.display_answer()
             if(self.gamestarted == False):
-                if self.solver_bool.get() == True:
-                    self.Solver.solverDisplay(self.gamestarted, self.solver_bool)
                 self.force_word_check()
                 if(self.gamestarted == True):
                     self.runChecks = 'disabled'
                     self.parameterScreen()
             if(self.gamestarted == True):
-                if self.solver_bool.get() == True:
-                    self.Solver.solverDisplay(self.gamestarted, self.solver_bool)
+                self.Solver.solverDisplay(self.gamestarted, self.solver_bool)
                 self.messageString.set('Game has started')
                 self.window.after(self.MESSAGE_DISPLAY_TIME_SECS*500, self.remove_message)
 
