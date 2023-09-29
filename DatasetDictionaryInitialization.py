@@ -8,8 +8,8 @@ class DataProbCalc:
         pass
 
 #open files to be read
-f = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Dataset Text Files/long_wordlist.txt", "r")
-d = open("/Users/evanp/OneDrive/Desktop/Individual Projects/WordleRepo/Dataset Text Files/LetterFrequency.txt", "r")
+f = open("./Dataset_Text_Files/long_wordlist.txt", "r")
+d = open("./Dataset_Text_Files/LetterFrequency.txt", "r")
 csv_reader = csv.reader(d, delimiter = ',')
 
 #create dictionaries
